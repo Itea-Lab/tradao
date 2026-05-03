@@ -8,8 +8,14 @@
 	const menuItems = [
 		{
 			name: 'Organisers',
-			href: '/manage',
+			href: '/organisers',
 			icon: 'manage_accounts',
+			external: false
+		},
+		{
+			name: 'About',
+			href: '/about',
+			icon: 'info',
 			external: false
 		},
 		{

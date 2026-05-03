@@ -18,9 +18,26 @@
 	keywords="ITea Lab, Tradao, Login, Management Dashboard, Events, Tickets, Technology, Innovation, Community, Vietnam"
 />
 
-<Banner
-	title="Login as Event Organiser"
-	description="Access the management dashboard to manage events and tickets"
-/>
+<div id="centre">
+	<Banner
+		title="Login as Event Organiser"
+		description="Access the management dashboard to manage events and tickets"
+	/>
+	<LoginForm {redirectTo} />
+</div>
 
-<LoginForm {redirectTo} />
+<style>
+	#centre {
+		height: 80vh;
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: center;
+	}
+
+	@media (max-width: 600px) {
+		#centre {
+			height: auto;
+		}
+	}
+</style>

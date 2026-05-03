@@ -62,7 +62,7 @@
 	}
 </script>
 
-<article style="max-width: 80ch; margin: auto">
+<article style="max-width: 80ch; margin-inline: auto">
 	<form method="POST" onsubmit={handleLogin} novalidate>
 		<div class="field border label prefix">
 			<i>email</i>
