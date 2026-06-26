@@ -13,8 +13,9 @@
 
 <PageMetadata
 	title={event.title}
-	description={event.description}
+	description={`Join ITea Lab event "${event.title}"!`}
 	keywords={`ITea Lab, Tradao, Event, ${event.title}, ${event.category}, Technology, Innovation, Community, Vietnam`}
+	image={event.image}
 />
 
 <div class="grid-base" id="event-details-page">
