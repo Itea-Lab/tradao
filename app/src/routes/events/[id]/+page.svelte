@@ -20,7 +20,7 @@
 
 <div class="grid-base" id="event-details-page">
 	<article class="border no-padding" style="grid-area: image">
-		<img src={event.image} alt="" class="responsive" />
+		<img id="thumbnail" src={event.image} alt="{event.title}" class="responsive" />
 	</article>
 
 	<article class="border" style="grid-area: head">
@@ -95,6 +95,10 @@
 
 	iframe {
 		aspect-ratio: 1;
+	}
+
+	#thumbnail {
+		object-fit: contain;
 	}
 
 	@media (max-width: 768px) {
