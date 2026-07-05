@@ -19,28 +19,23 @@
 			external: false
 		},
 		{
-			name: 'ITea Lab',
-			href: 'https://itealab.vercel.app',
-			icon: 'home',
-			external: true
+			name: 'Feedback',
+			href: 'mailto:contact.itealab@gmail.com',
+			icon: 'feedback',
+			external: false
 		}
 	];
 
-	const explore = [
-		{ name: 'About', href: '/' },
-		{ name: 'Community', href: '/' },
-		{ name: 'Join Us', href: '/' }
-	];
-
 	const community = [
-		{ name: 'GitHub', href: 'https://github.com/itea-lab' },
-		{ name: 'Facebook', href: 'https://facebook.com/ITeaLabTeam/' },
-		{ name: 'LinkedIn', href: 'https://linkedin.com/company/itea-lab' }
+		{ icon: 'github', name: 'GitHub', href: 'https://github.com/itea-lab' },
+		{ icon: 'linkedin', name: 'LinkedIn', href: 'https://linkedin.com/company/itea-lab' },
+		{ icon: 'facebook', name: 'Facebook', href: 'https://facebook.com/ITeaLabTeam/' },
 	];
 
 	const contact = {
 		email: 'contact.itealab@gmail.com',
-		address: 'A35 Bach Dang street, Tan Binh district, Ho Chi Minh city, Vietnam'
+		address: 'A35 Bach Dang St, Tan Son Hoa Ward, Ho Chi Minh City, Vietnam',
+		website: 'https://itealab.vercel.app'
 	};
 </script>
 
@@ -50,4 +45,4 @@
 	{@render children()}
 </main>
 
-<Footer {explore} {community} {contact} />
+<Footer {community} {contact} />

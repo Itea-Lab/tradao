@@ -2,9 +2,9 @@
 	import TextClock from "./TextClock.svelte";
 
 	const modes = [
-		{ id: 'auto', icon: 'routine' },
-		{ id: 'light', icon: 'light_mode' },
-		{ id: 'dark', icon: 'dark_mode' },
+		{ id: "auto", icon: "routine" },
+		{ id: "light", icon: "light_mode" },
+		{ id: "dark", icon: "dark_mode" },
 	];
 
 	let iMode = $state(0);
@@ -26,11 +26,22 @@
 	} = $props();
 </script>
 
+{#snippet UIModeButton()}
+	<button
+		class="transparent circle"
+		onclick={updateTheme}
+		data-testid="theme-toggle-button"
+	>
+		<i>{modes[iMode].icon}</i>
+	</button>
+{/snippet}
+
 <!-- Medium & Large Screen: Top navigation bar -->
 <nav class="top m l" data-testid="navigation-top">
 	<p class="large-text">
 		<a href="/">
-			<img src="/logos/logo_dark.svg" alt="Tradao Logo" id="wordmark" />
+			<img class="logo light" src="/logos/logo.svg" alt="Tradao Logo" />
+			<img class="logo dark" src="/logos/logo_dark.svg" alt="Tradao Logo" />
 		</a>
 	</p>
 
@@ -46,7 +57,7 @@
 				href={item.href}
 				target={item.external ? "_blank" : "_self"}
 				rel={item.external ? "noopener noreferrer" : ""}
-				data-testid="{`${item.icon}-t${index}`}"
+				data-testid={`${item.icon}-t${index}`}
 			>
 				<i class="prefix-icon">{item.icon}</i>
 				{item.name}
@@ -55,33 +66,35 @@
 
 		<span>|</span>
 
-		<button
-			class="transparent circle"
-			onclick={updateTheme}
-			data-testid="theme-toggle-button"
-		>
-			<i>{modes[iMode].icon}</i>
-		</button>
+		{@render UIModeButton()}
 	</div>
 </nav>
 
 <!-- Small Screen: Top wordmark -->
 <nav class="top s" data-testid="navigation-top-s">
-	<div>
-		<a href="https://itealab.vercel.app">
-			<img class="light" src="/logos/logo-lab.svg" alt="ITea Lab Logo" id="wordmark" />
-			<img class="dark" src="/logos/logo-lab_dark.svg" alt="ITea Lab Logo" id="wordmark" />
-		</a>
+	<TextClock />
 
-		<a href="/">
-			<img class="light" src="/logos/logo.svg" alt="Tradao Logo" id="wordmark" />
-			<img class="dark" src="/logos/logo_dark.svg" alt="Tradao Logo" id="wordmark" />
+	<span>|</span>
+
+	{@render UIModeButton()}
+</nav>
+
+<nav class="bottom s" data-testid="navigation-bottom-s">
+	{#each menuItems as item, index}
+		<a
+			href={item.href}
+			target={item.external ? "_blank" : "_self"}
+			rel={item.external ? "noopener noreferrer" : ""}
+			data-testid={`${item.icon}-t${index}`}
+		>
+			<i class="prefix-icon">{item.icon}</i>
+			<span>{item.name}</span>
 		</a>
-	</div>
+	{/each}
 </nav>
 
 <style>
-	#wordmark {
+	.logo {
 		height: 3rem;
 	}
 
