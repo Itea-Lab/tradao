@@ -67,6 +67,7 @@ export type Database = {
 					image: string;
 					location: string | null;
 					organiser_id: string;
+					slug: string | null;
 					start_time: string;
 					title: string;
 					updated_at: string;
@@ -80,6 +81,7 @@ export type Database = {
 					image?: string;
 					location?: string | null;
 					organiser_id: string;
+					slug?: string | null;
 					start_time: string;
 					title: string;
 					updated_at?: string;
@@ -93,6 +95,7 @@ export type Database = {
 					image?: string;
 					location?: string | null;
 					organiser_id?: string;
+					slug?: string | null;
 					start_time?: string;
 					title?: string;
 					updated_at?: string;
@@ -248,13 +251,6 @@ export type Database = {
 				};
 				Relationships: [
 					{
-						foreignKeyName: "event_tickets_academic_year_fkey";
-						columns: ["academic_year"];
-						isOneToOne: false;
-						referencedRelation: "academic_status";
-						referencedColumns: ["id"];
-					},
-					{
 						foreignKeyName: "event_tickets_event_id_fkey";
 						columns: ["event_id"];
 						isOneToOne: false;
@@ -266,13 +262,6 @@ export type Database = {
 						columns: ["event_id"];
 						isOneToOne: false;
 						referencedRelation: "upcoming_events";
-						referencedColumns: ["id"];
-					},
-					{
-						foreignKeyName: "event_tickets_field_of_study_fkey";
-						columns: ["field_of_study"];
-						isOneToOne: false;
-						referencedRelation: "fields_of_study";
 						referencedColumns: ["id"];
 					},
 				];
@@ -329,34 +318,7 @@ export type Database = {
 			};
 		};
 		Functions: {
-			create_event_ticket:
-				| {
-					Args: {
-						p_academic_year:
-							Database["public"]["Enums"]["academic_year"];
-						p_email: string;
-						p_event_id: string;
-						p_field_of_study:
-							Database["public"]["Enums"]["field_of_study"];
-						p_major: string;
-						p_name: string;
-						p_participate?: boolean;
-					};
-					Returns: string;
-				}
-				| {
-					Args: {
-						p_academic_year: string;
-						p_email: string;
-						p_event_id: string;
-						p_field_of_study: string;
-						p_major: string;
-						p_name: string;
-						p_participate?: boolean;
-						p_student_id: string;
-					};
-					Returns: string;
-				};
+			[_ in never]: never;
 		};
 		Enums: {
 			academic_year:
@@ -366,10 +328,7 @@ export type Database = {
 				| "Senior"
 				| "Graduate"
 				| "Other";
-			field_of_study:
-				| "Business"
-				| "Computer Science"
-				| "Media & Communication";
+			field_of_study: "Business" | "Computer Science" | "Media & Communication";
 		};
 		CompositeTypes: {
 			[_ in never]: never;
@@ -379,8 +338,10 @@ export type Database = {
 
 type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">;
 
-type DefaultSchema =
-	DatabaseWithoutInternals[Extract<keyof Database, "public">];
+type DefaultSchema = DatabaseWithoutInternals[Extract<
+	keyof Database,
+	"public"
+>];
 
 export type Tables<
 	DefaultSchemaTableNameOrOptions extends
@@ -388,39 +349,28 @@ export type Tables<
 		| { schema: keyof DatabaseWithoutInternals },
 	TableName extends DefaultSchemaTableNameOrOptions extends {
 		schema: keyof DatabaseWithoutInternals;
-	} ? keyof (
-			& DatabaseWithoutInternals[
-				DefaultSchemaTableNameOrOptions["schema"]
-			]["Tables"]
-			& DatabaseWithoutInternals[
-				DefaultSchemaTableNameOrOptions["schema"]
-			]["Views"]
-		)
+	}
+		? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+				DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
 		: never = never,
 > = DefaultSchemaTableNameOrOptions extends {
 	schema: keyof DatabaseWithoutInternals;
-} ? (
-		& DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]][
-			"Tables"
-		]
-		& DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]][
-			"Views"
-		]
-	)[TableName] extends {
-		Row: infer R;
-	} ? R
-	: never
-	: DefaultSchemaTableNameOrOptions extends keyof (
-		& DefaultSchema["Tables"]
-		& DefaultSchema["Views"]
-	) ? (
-			& DefaultSchema["Tables"]
-			& DefaultSchema["Views"]
-		)[DefaultSchemaTableNameOrOptions] extends {
+}
+	? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+			DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
 			Row: infer R;
-		} ? R
+		}
+		? R
 		: never
-	: never;
+	: DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+				DefaultSchema["Views"])
+		? (DefaultSchema["Tables"] &
+				DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+				Row: infer R;
+			}
+			? R
+			: never
+		: never;
 
 export type TablesInsert<
 	DefaultSchemaTableNameOrOptions extends
@@ -429,25 +379,23 @@ export type TablesInsert<
 	TableName extends DefaultSchemaTableNameOrOptions extends {
 		schema: keyof DatabaseWithoutInternals;
 	}
-		? keyof DatabaseWithoutInternals[
-			DefaultSchemaTableNameOrOptions["schema"]
-		]["Tables"]
+		? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
 		: never = never,
 > = DefaultSchemaTableNameOrOptions extends {
 	schema: keyof DatabaseWithoutInternals;
 }
-	? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]][
-		"Tables"
-	][TableName] extends {
-		Insert: infer I;
-	} ? I
-	: never
+	? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+			Insert: infer I;
+		}
+		? I
+		: never
 	: DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
 		? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-			Insert: infer I;
-		} ? I
-		: never
-	: never;
+				Insert: infer I;
+			}
+			? I
+			: never
+		: never;
 
 export type TablesUpdate<
 	DefaultSchemaTableNameOrOptions extends
@@ -456,25 +404,23 @@ export type TablesUpdate<
 	TableName extends DefaultSchemaTableNameOrOptions extends {
 		schema: keyof DatabaseWithoutInternals;
 	}
-		? keyof DatabaseWithoutInternals[
-			DefaultSchemaTableNameOrOptions["schema"]
-		]["Tables"]
+		? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
 		: never = never,
 > = DefaultSchemaTableNameOrOptions extends {
 	schema: keyof DatabaseWithoutInternals;
 }
-	? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]][
-		"Tables"
-	][TableName] extends {
-		Update: infer U;
-	} ? U
-	: never
+	? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+			Update: infer U;
+		}
+		? U
+		: never
 	: DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
 		? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-			Update: infer U;
-		} ? U
-		: never
-	: never;
+				Update: infer U;
+			}
+			? U
+			: never
+		: never;
 
 export type Enums<
 	DefaultSchemaEnumNameOrOptions extends
@@ -483,19 +429,15 @@ export type Enums<
 	EnumName extends DefaultSchemaEnumNameOrOptions extends {
 		schema: keyof DatabaseWithoutInternals;
 	}
-		? keyof DatabaseWithoutInternals[
-			DefaultSchemaEnumNameOrOptions["schema"]
-		]["Enums"]
+		? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
 		: never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
 	schema: keyof DatabaseWithoutInternals;
 }
-	? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]][
-		"Enums"
-	][EnumName]
+	? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
 	: DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
 		? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-	: never;
+		: never;
 
 export type CompositeTypes<
 	PublicCompositeTypeNameOrOptions extends
@@ -504,20 +446,15 @@ export type CompositeTypes<
 	CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
 		schema: keyof DatabaseWithoutInternals;
 	}
-		? keyof DatabaseWithoutInternals[
-			PublicCompositeTypeNameOrOptions["schema"]
-		]["CompositeTypes"]
+		? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
 		: never = never,
 > = PublicCompositeTypeNameOrOptions extends {
 	schema: keyof DatabaseWithoutInternals;
 }
-	? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]][
-		"CompositeTypes"
-	][CompositeTypeName]
-	: PublicCompositeTypeNameOrOptions extends
-		keyof DefaultSchema["CompositeTypes"]
+	? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+	: PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
 		? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-	: never;
+		: never;
 
 export const Constants = {
 	graphql_public: {
@@ -533,11 +470,7 @@ export const Constants = {
 				"Graduate",
 				"Other",
 			],
-			field_of_study: [
-				"Business",
-				"Computer Science",
-				"Media & Communication",
-			],
+			field_of_study: ["Business", "Computer Science", "Media & Communication"],
 		},
 	},
 } as const;
