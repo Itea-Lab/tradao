@@ -17,7 +17,7 @@
 		/>
 	</div>
 	<div class="padding s12 m8">
-		<h2 class="small">{event.title}</h2>
+		<h2>{event.title}</h2>
 
 		<p data-testid="event-date-range">
 			<i data-testid="event-date-icon">event</i> <strong>Date:</strong>
@@ -38,3 +38,9 @@
 		</a>
 	</div>
 </article>
+
+<style>
+	h2 {
+		font-size: 2rem;
+	}
+</style>
