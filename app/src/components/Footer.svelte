@@ -30,7 +30,7 @@
 		<a href="/about">Minh-Triet et al.</a>
 	</p>
 
-	<div class="s12 m6">
+	<div class="s12 m8 l6">
 		<p>
 			<i class="material-icons">info</i>
 			<a href={contact.website} target="_blank" rel="noopener noreferrer">
@@ -56,7 +56,7 @@
 		</p>
 	</div>
 
-	<div class="s12 m6" id="community">
+	<div class="s12 m4 l3" id="community">
 		{#each community as item}
 			<p>
 				<a href={item.href} target="_blank" rel="noopener noreferrer">
@@ -67,6 +67,15 @@
 			</p>
 		{/each}
 	</div>
+
+	<div class="s1 m1 l3" id="leaf">
+		<svg class="medium-opacity" id="leaf--graphic" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 65 90">
+			<path
+				fill="var(--primary)"
+				d="M9.76426 0C9.76426 0 17.1691 7.18412 25.1775 10.0805C84.482 31.5312 59.4707 73.3326 58.6548 73.4704C58.6548 73.4704 55.3293 67.6792 50.837 64.376C22.331 43.4199 16.5372 19.2984 16.5372 19.2984C16.5372 19.2984 22.9339 48.3243 48.2943 66.385C53.8955 70.3719 57.6882 80.1885 59.2936 90C59.2936 90 55.3232 88.3958 53.6159 87.9613C52.9501 83.6167 51.5581 79.4564 49.2048 75.74C13.7606 79.96 2.152 51.3996 0.63549 41.4408C-2.94384 17.9203 9.76426 0 9.76426 0Z"
+			/>
+		</svg>
+	</div>
 </footer>
 
 <style>
@@ -76,6 +85,19 @@
 
 	#address--text {
 		max-width: 80%;
+	}
+
+	@media (width >= 994px) {
+		#leaf {
+			height: 3rem;
+		}
+
+		#leaf--graphic {
+			aspect-ratio: 23 / 32;
+			max-width: 180px;
+			position: absolute;
+			translate: 0 -7rem;
+		}
 	}
 
 	@media (prefers-color-scheme: dark) {
