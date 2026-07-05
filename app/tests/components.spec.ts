@@ -6,7 +6,6 @@ import Banner from "$components/Banner.svelte";
 import EventCard from "$components/EventCard.svelte";
 import EventsFeed from "$components/EventsFeed.svelte";
 import Footer from "$components/Footer.svelte";
-import Leaf from "$components/Leaf.svelte";
 import LoginForm from "$components/LoginForm.svelte";
 import Navigation from "$components/Navigation.svelte";
 import PageMetadata from "$components/PageMetadata.svelte";
@@ -172,17 +171,6 @@ describe("/Footer.svelte", () => {
 		const heading = getByRole("heading", { level: 1 });
 		await expect.element(heading).toBeInTheDocument();
 		await expect.element(heading).toHaveTextContent("ITea Lab");
-	});
-});
-
-// MARK: Leaf
-describe("/Leaf.svelte", () => {
-	it("...should display an SVG image", async () => {
-		// This is just an SVG component
-		const { getByRole } = await render(Leaf);
-
-		const svg = getByRole("img");
-		await expect.element(svg).toBeInTheDocument();
 	});
 });
 

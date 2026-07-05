@@ -13,6 +13,7 @@ export const mockEvents: Tables<"community_events">[] = [
 		category: "Workshop",
 		created_at: "2024-01-01",
 		updated_at: "2024-01-01",
+		slug: "mock_event_title_1"
 	},
 	{
 		id: "mock_id_2",
@@ -26,6 +27,7 @@ export const mockEvents: Tables<"community_events">[] = [
 		category: "Seminar",
 		created_at: "2024-02-01",
 		updated_at: "2024-02-01",
+		slug: "mock_event_title_2"
 	},
 ];
 
@@ -50,14 +52,15 @@ export const mockFooterProps = {
 		{ name: "Contact", href: "/contact" }
 	],
 	community: [
-		{ name: "Blog", href: "/blog" },
-		{ name: "Forum", href: "/forum" },
-		{ name: "Events", href: "/events" },
-		{ name: "Support", href: "/support" }
+		{ icon: "blog", name: "Blog", href: "/blog" },
+		{ icon: "forum", name: "Forum", href: "/forum" },
+		{ icon: "events", name: "Events", href: "/events" },
+		{ icon: "support", name: "Support", href: "/support" }
 	],
 	contact: {
 		email: "info@itealab.com",
-		address: "123 Main St, Anytown, USA"
+		address: "123 Main St, Anytown, USA",
+		website: "https://www.itealab.com",
 	}
 };
 
