@@ -14,25 +14,25 @@
 		"test": "npm run test:unit -- --run"
 	},
 	"devDependencies": {
-		"@sveltejs/adapter-cloudflare": "^7.2.8",
-		"@sveltejs/kit": "^2.55.0",
+		"@sveltejs/adapter-cloudflare": "^7.2.9",
+		"@sveltejs/kit": "^2.69.1",
 		"@sveltejs/vite-plugin-svelte": "^6.2.4",
 		"@vitest/browser-webdriverio": "^4.1.2",
 		"@vitest/coverage-v8": "^4.1.2",
-		"svelte": "^5.55.0",
-		"svelte-check": "^4.4.5",
+		"svelte": "^5.56.4",
+		"svelte-check": "^4.7.1",
 		"typescript": "^5.9.3",
-		"vite": "^7.3.1",
+		"vite": "^7.3.6",
 		"vitest": "^4.0.10",
-		"vitest-browser-svelte": "^2.1.0"
+		"vitest-browser-svelte": "^2.2.0"
 	},
 	"dependencies": {
 		"@googleapis/walletobjects": "^11.2.0",
 		"@humanspeak/svelte-markdown": "^0.8.17",
 		"@supabase/ssr": "^0.8.0",
-		"@supabase/supabase-js": "^2.100.1",
+		"@supabase/supabase-js": "^2.110.0",
 		"add-to-calendar-button": "2.13.5",
-		"jose": "^6.2.2",
+		"jose": "^6.2.3",
 		"jsqr": "^1.4.0",
 		"ulid": "^3.0.2",
 		"yup": "^1.7.1"
