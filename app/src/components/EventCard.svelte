@@ -3,6 +3,8 @@
 	import { formatDate, isEventUpcoming } from "$lib/utils";
 
 	let { event }: { event: Tables<"community_events"> } = $props();
+
+	const eventLink = $derived(`/events/${event.slug ? event.slug : event.id}`);
 </script>
 
 <!-- Event Card Component -->
@@ -33,7 +35,7 @@
 
 		<div class="space"></div>
 
-		<a class="button" href={`/events/${event.id}`}>
+		<a class="button" href={eventLink}>
 			{isEventUpcoming(event.start_time!) ? "Register" : "View"}
 		</a>
 	</div>

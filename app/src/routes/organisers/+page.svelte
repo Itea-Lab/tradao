@@ -19,7 +19,7 @@
 />
 
 <section style="max-width: 90ch; margin: auto">
-	<a class="block" href="/manage/events">
+	<a class="block" href="/organisers/events">
 		<article>
 			<h2><i class="large">event</i> Manage Events</h2>
 			<div class="row right-align">
@@ -30,7 +30,7 @@
 
 	<div class="space"></div>
 
-	<a class="block" href="/manage/tickets">
+	<a class="block" href="/organisers/tickets">
 		<article>
 			<h2><i class="large">local_activity</i> Manage Tickets</h2>
 			<div class="row right-align">
@@ -41,7 +41,7 @@
 
 	<div class="space"></div>
 
-	<a class="block" href="/manage/check-in">
+	<a class="block" href="/organisers/check-in">
 		<article>
 			<h2><i class="large">camera</i> Check-in Tickets</h2>
 			<div class="row right-align">
