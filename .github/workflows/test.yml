@@ -15,14 +15,21 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     defaults:
       run:
         working-directory: app
     steps:
       - uses: actions/checkout@v6
+
       - name: Use Node.js 25.x
         uses: actions/setup-node@v6
         with:
           node-version: 25.x
-      - run: npm install
-      - run: npm test
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - run: npm ci
+
+      - name: Run tests
+        run: npm run test:unit -- --run
