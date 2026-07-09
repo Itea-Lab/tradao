@@ -6,15 +6,15 @@
 
 <div class="grid">
 	<div class="s12 center-align large-padding">
-		<h1 class="small">An Event Management Platform</h1>
-		<h2 class="small">Built by and for ITea Lab</h2>
+		<h1 class="small">An Platform for Event Management and Ticketing</h1>
+		<h2 class="small">Dedicated to ITea Lab &mdash; Swinburne HCMC Innovation Hub</h2>
 	</div>
 
 	<div class="s12 medium-padding">
 		<p class="large-text">
 			Ideated in June 2025, Tradao is a platform dedicated to event management at
-			ITea Lab. As a community of R&D Computer Science students, we use our
-			expertise not only in innovative business and industry solutions, but also in
+			ITea Lab. As a community of R&D Computer Science students, we not only apply
+			our expertise in innovative business and industry solutions, but also in
 			streamlining our internal processes.
 		</p>
 	</div>
@@ -24,26 +24,26 @@
 		<p class="small-text">Note: Vietnamese names are in "last, first" format</p>
 	</div>
 
-	<div class="s3 medium-padding center-align member">
+	<div class="s12 m6 l3 medium-padding center-align member">
 		<img src="/img/pfp-triet.jpg" alt="PFP" class="shape sunny" width="256" height="256">
 		<h3 class="small">Nguyen&nbsp;Ta Minh&nbsp;Triet</h3>
 		<p class="large-text">Sole Author</p>
 	</div>
 
-	<div class="s3 medium-padding center-align member">
+	<div class="s12 m6 l3 medium-padding center-align member">
 		<img src="/img/pfp-thinh.jpg" alt="PFP" class="shape sunny" width="256" height="256">
 		<h3 class="small">Nguyen&nbsp;Khanh Phuc&nbsp;Thinh</h3>
 		<p class="large-text">Supervisor / Client</p>
 	</div>
 
-	<div class="s3 medium-padding center-align member">
+	<div class="s12 m6 l3 medium-padding center-align member">
 		<img src="/img/pfp-bao.jpg" alt="PFP" class="shape sunny" width="256" height="256">
 		<h3 class="small">Huynh&nbsp;Nguyen Quoc&nbsp;Bao</h3>
 		<p class="large-text">Supervisor / Client</p>
 	</div>
 
-	<div class="s3 medium-padding center-align member">
-		<h3 class="small">+ Rest of ITea Lab</h3>
+	<div class="s12 m6 l3 medium-padding center-align member">
+		<h3 class="small">+ Everyone Else at ITea Lab</h3>
 		<p class="large-text">Client / Testers</p>
 	</div>
 </div>

@@ -22,7 +22,7 @@
 			name: 'Feedback',
 			href: 'mailto:contact.itealab@gmail.com',
 			icon: 'feedback',
-			external: false
+			external: true
 		}
 	];
 
