@@ -27,13 +27,38 @@
 </script>
 
 {#snippet UIModeButton()}
-	<button
-		class="transparent circle"
-		onclick={updateTheme}
-		data-testid="theme-toggle-button"
-	>
-		<i>{modes[iMode].icon}</i>
-	</button>
+	<div>
+		<button
+			class="transparent circle"
+			onclick={updateTheme}
+			data-testid="theme-toggle-button"
+		>
+			<i>{modes[iMode].icon}</i>
+		</button>
+	</div>
+{/snippet}
+
+{#snippet NavigationMenu(offset: "left" | "right", isOnTop = false)}
+	<div data-ui="#menu">
+		<button class="transparent circle" data-testid="menu-button">
+			<i>menu</i>
+		</button>
+		<menu id="menu" class="{offset} {isOnTop ? 'top' : ''} no-wrap" data-testid="navigation-menu">
+			{#each menuItems as item, index}
+				<li>
+					<a
+						href={item.href}
+						target={item.external ? "_blank" : "_self"}
+						rel={item.external ? "noopener noreferrer" : ""}
+						data-testid={`${item.icon}-m${index}`}
+					>
+						<i class="prefix-icon">{item.icon}</i>
+						{item.name}
+					</a>
+				</li>
+			{/each}
+		</menu>
+	</div>
 {/snippet}
 
 <!-- Medium & Large Screen: Top navigation bar -->
@@ -72,25 +97,13 @@
 
 <!-- Small Screen: Top wordmark -->
 <nav class="top s" data-testid="navigation-top-s">
+	{@render NavigationMenu("right")}
+	<div class="max"></div>
+
 	<TextClock />
 
-	<span>|</span>
-
+	<div class="max"></div>
 	{@render UIModeButton()}
-</nav>
-
-<nav class="bottom s" data-testid="navigation-bottom-s">
-	{#each menuItems as item, index}
-		<a
-			href={item.href}
-			target={item.external ? "_blank" : "_self"}
-			rel={item.external ? "noopener noreferrer" : ""}
-			data-testid={`${item.icon}-t${index}`}
-		>
-			<i class="prefix-icon">{item.icon}</i>
-			<span>{item.name}</span>
-		</a>
-	{/each}
 </nav>
 
 <style>

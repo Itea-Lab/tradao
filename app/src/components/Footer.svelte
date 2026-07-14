@@ -56,7 +56,7 @@
 		</p>
 	</div>
 
-	<div class="s12 m4 l3" id="community">
+	<div class="s6 m4 l3" id="community">
 		{#each community as item}
 			<p>
 				<a href={item.href} target="_blank" rel="noopener noreferrer">
@@ -68,7 +68,7 @@
 		{/each}
 	</div>
 
-	<div class="s1 m1 l3" id="leaf">
+	<div class="s3 m1 l3" id="leaf">
 		<svg class="medium-opacity" id="leaf--graphic" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 65 90">
 			<path
 				fill="var(--primary)"
