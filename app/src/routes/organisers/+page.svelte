@@ -8,17 +8,26 @@
 </script>
 
 <PageMetadata
-	title="Management Home"
+	title="Organiser Home"
 	description="Manage ITea Lab events and Tradao tickets here"
-	keywords="ITea Lab, Tradao, Management Dashboard, Events, Tickets, Technology, Innovation, Community, Vietnam"
+	keywords="ITea Lab, Tradao, Organiser Home, Events, Tickets, Technology, Innovation, Community, Vietnam"
 />
 
 <Banner
-	title={`Welcome back, ${username}`}
-	description="Manage ITea Lab events and Tradao tickets here"
+	title="Organiser Dashboard"
+	description="Manage events from creation to ticketing and check-in."
 />
 
 <section style="max-width: 90ch; margin: auto">
+	<hr class="bottom-margin" />
+
+	<p class="center-align">
+		You are signed in as {username}.
+		<button onclick={() => console.log("Signing out...")}>Sign out</button>
+	</p>
+
+	<hr class="vertical-margin" />
+
 	<a class="block" href="/organisers/events">
 		<article>
 			<h2><i class="large">event</i> Manage Events</h2>
