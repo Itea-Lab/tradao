@@ -5,6 +5,19 @@
 
 	let { data }: { data: PageData } = $props();
 	let username = $derived(data.user?.email ?? "User");
+
+	async function handleLogout() {
+		const response = await fetch("/api/logout", {
+			method: "GET",
+			headers: { "Content-Type": "application/json" },
+		});
+
+		if (response.ok) {
+			window.location.href = "/login";
+		} else {
+			console.error("Logout failed");
+		}
+	}
 </script>
 
 <PageMetadata
@@ -23,7 +36,7 @@
 
 	<p class="center-align">
 		You are signed in as {username}.
-		<button onclick={() => console.log("Signing out...")}>Sign out</button>
+		<button onclick={handleLogout}>Sign out</button>
 	</p>
 
 	<hr class="vertical-margin" />
