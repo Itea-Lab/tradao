@@ -30,6 +30,9 @@ jobs:
 
       - name: Build SvelteKit app
         run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          VITE_SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
 
       - name: Build & Deploy Worker
         uses: cloudflare/wrangler-action@v4
