@@ -1,13 +1,16 @@
 # https://developers.cloudflare.com/workers/ci-cd/external-cicd/github-actions/
-name: Deploy SvelteKit app to Cloudflare Workers
+name: Deploy to production
 
 on:
   push:
     branches:
       - init
+    paths:
+      - "app/**"
 
 jobs:
   deploy:
+    name: Deploy SvelteKit application
     runs-on: ubuntu-latest
     timeout-minutes: 15
     defaults:
