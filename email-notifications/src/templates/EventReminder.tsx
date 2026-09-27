@@ -2,13 +2,11 @@ import {
 	Body, Container, Html, Img, Markdown, pixelBasedPreset,
 	pretty, Preview, render, Tailwind, Text, toPlainText
 } from "react-email"
-import { colours, EmailHead, EventData, LogoHeader } from "./common";
+import { colours, EmailHead, EventData, formatDateTime, LogoHeader } from "./common";
 
 /**
- * Event Reminder Email Template
- *
- * This email template is designed to remind attendees about an upcoming event.
- * The email is sent at 20:00 the day before the event.
+ * Email template to remind attendees
+ * about an event happening the next day.
  */
 export const EventReminder = (props: EventData) => (
 	<Html>
@@ -17,26 +15,22 @@ export const EventReminder = (props: EventData) => (
 			<Body className={`px-[1.5rem] font-sans text-[${colours.fg}]`}>
 				<Preview>{EventReminder.Subject(props)}</Preview>
 				<LogoHeader />
-				<EventReminder.LetterCard {...props} />
+				<LetterCard {...props} />
 				<Text className="max-w-md mx-auto text-center">
-					If you have any questions or need assistance, feel free to reach out to our support team at
-					{' '}<a href="mailto:contact.itealab@gmail.com">contact.itealab@gmail.com</a>
+					Reach out via <a href="mailto:contact.itealab@gmail.com">contact.itealab@gmail.com</a>
+					<br />if you have any questions or need assistance
 				</Text>
 			</Body>
 		</Tailwind>
 	</Html>
 )
 
-/**
- * Subject line
- */
+/** Subject line */
 EventReminder.Subject = (props: EventData) =>
 	`[Test mail|Google pls spare me] ${props.title} Starts Tomorrow!`;
 
-/**
- * The main card that contains the event image and details.
- */
-EventReminder.LetterCard = (props: EventData) => (
+/** The main card that contains the event image and details. */
+const LetterCard = (props: EventData) => (
 	<Container
 		className={`mx-auto my-[1rem] bg-[${colours.bg}] border-3 border-[${colours.fg}] rounded-[1rem]`}>
 		<Img
@@ -47,15 +41,14 @@ EventReminder.LetterCard = (props: EventData) => (
 			alt={props.title} />
 
 		<Markdown markdownContainerStyles={{ padding: "1rem" }}>
-			{EventReminder.MarkdownBody(props)}
+			{MarkdownBody(props)}
 		</Markdown>
 	</Container>
 );
 
-/**
- * Email letter in Markdown
- */
-EventReminder.MarkdownBody = (props: EventData) => `
+/** Email letter in Markdown */
+const MarkdownBody = (props: EventData) =>
+`
 Dear esteemed attendees,
 
 Thank you for registering to participate in our upcoming event,
@@ -79,9 +72,11 @@ Here are some directions for arriving and parking at Swinburne Vietnam, HCMC:
 We look forward to seeing you there!
 
 Best regards,
+
 The ITea Lab Team
 `
 
+/** Preview props */
 EventReminder.PreviewProps = {
 	id: "event-1",
 	organiser_id: "organiser-1",
@@ -96,22 +91,11 @@ EventReminder.PreviewProps = {
 	updated_at: "2026-03-23T12:00:00Z",
 } as EventData;
 
+/** Compile into email content */
 EventReminder.compile = async function (props: EventData) {
 	return await render(<EventReminder {...props} />)
 		.then(html => pretty(html))
 		.then(html => ({ html, text: toPlainText(html), }));
-}
-
-function formatDateTime(dateTimeStr: string) {
-	return new Date(dateTimeStr).toLocaleString("en-AU", {
-		month: "long",
-		day: "2-digit",
-		year: "numeric",
-		hour: "2-digit",
-		minute: "2-digit",
-		hour12: false,
-		timeZoneName: "shortOffset",
-	});
 }
 
 export default EventReminder;

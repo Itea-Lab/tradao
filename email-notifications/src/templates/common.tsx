@@ -60,3 +60,16 @@ export const LogoHeader = () => (
 		</Column>
 	</Row>
 );
+
+/** Format a date and time string */
+export function formatDateTime(datetime: string | Date) {
+	return new Date(datetime).toLocaleString("en-AU", {
+		month: "long",
+		day: "2-digit",
+		year: "numeric",
+		hour: "2-digit",
+		minute: "2-digit",
+		hour12: false,
+		timeZoneName: "shortOffset",
+	});
+}
