@@ -1,0 +1,28 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"compatibility_date": "2026-09-23",
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"main": "src/index.ts",
+	"name": "tradao-email-notifications",
+	"observability": {
+		"enabled": true,
+		"issues": {
+			"enabled": true
+		},
+		"logs": {
+			"enabled": true
+		},
+		"traces": {
+			"enabled": true
+		}
+	},
+	"triggers": {
+		"crons": [
+			"0 13 * * *", // Event reminder: Daily at 20:00 UTC+7
+			"0 10 * * *", // Event feedback: Daily at 17:00 UTC+7
+		]
+	},
+	"upload_source_maps": true
+}

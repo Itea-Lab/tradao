@@ -1,0 +1,25 @@
+{
+	"name": "email-notifications",
+	"version": "0.0.0",
+	"private": true,
+	"scripts": {
+		"email:dev": "email dev --dir src/templates",
+		"deploy": "wrangler deploy",
+		"dev": "wrangler dev --test-scheduled",
+		"start": "wrangler dev --test-scheduled",
+		"cf-typegen": "wrangler types"
+	},
+	"dependencies": {
+		"react": "19.3.0",
+		"react-dom": "19.3.0",
+		"react-email": "6.11.0",
+		"worker-mailer": "^1.2.1"
+	},
+	"devDependencies": {
+		"@react-email/ui": "6.11.0",
+		"@types/node": "^26.6.2",
+		"@types/react": "^19.3.0",
+		"typescript": "^5.5.2",
+		"wrangler": "^4.140.0"
+	}
+}
