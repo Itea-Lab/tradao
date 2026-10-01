@@ -26,6 +26,12 @@ export default {
 			return;
 		}
 
+		// 1c. Log events found to happen tomorrow
+		console.log(`- Found ${events.length} event(s) starting tomorrow:`);
+		for (const event of events) {
+			console.log(`  - ${event.title} (${event.start_time})`);
+		}
+
 		// 2. Construct email notification
 		const bccs = events.flatMap(event => event.event_tickets.map(ticket => ticket.email));
 		const eventData = events[0];

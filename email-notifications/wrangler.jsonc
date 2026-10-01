@@ -21,7 +21,7 @@
 	"triggers": {
 		"crons": [
 			"0 13 * * *", // Event reminder: Daily at 20:00 UTC+7
-			"0 10 * * *", // Event feedback: Daily at 17:00 UTC+7
+			// "0 10 * * *", // Event feedback: Daily at 17:00 UTC+7
 		]
 	},
 	"upload_source_maps": true
