@@ -1,18 +1,7 @@
 import { Row, Column, Img, Font, Head } from "react-email";
+import { Tables } from "../models";
 
-export interface EventData {
-	category: string;
-	created_at: string;
-	description: string | null;
-	end_time: string;
-	id: string;
-	image: string;
-	location: string | null;
-	organiser_id: string;
-	start_time: string;
-	title: string;
-	updated_at: string;
-}
+export type EventData = Tables<"community_events">;
 
 export const colours = {
 	/** Accent color */ ac: "#a8cd89",
