@@ -1,0 +1,26 @@
+{
+	"name": "email-notifications",
+	"version": "0.0.0",
+	"private": true,
+	"scripts": {
+		"email:dev": "email dev --dir src/templates",
+		"deploy": "wrangler deploy --strict --minify --secrets-file .env",
+		"dev": "wrangler dev --test-scheduled",
+		"start": "wrangler dev --test-scheduled",
+		"cf-typegen": "wrangler types"
+	},
+	"dependencies": {
+		"@supabase/supabase-js": "^2.117.2",
+		"react": "19.3.0",
+		"react-dom": "19.3.0",
+		"react-email": "6.11.0",
+		"worker-mailer": "^1.2.1"
+	},
+	"devDependencies": {
+		"@react-email/ui": "6.11.0",
+		"@types/node": "^26.6.3",
+		"@types/react": "^19.3.0",
+		"typescript": "^5.9.3",
+		"wrangler": "^4.145.0"
+	}
+}
