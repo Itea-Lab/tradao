@@ -13,14 +13,16 @@ on:
     branches: [init]
 
 jobs:
-  test:
+  test-app:
+    name: Test SvelteKit app
     runs-on: ubuntu-latest
     timeout-minutes: 10
     defaults:
       run:
         working-directory: app
     steps:
-      - uses: actions/checkout@v6
+      - name: Checkout
+        uses: actions/checkout@v6
 
       - name: Use Node.js 25.x
         uses: actions/setup-node@v6
@@ -29,7 +31,10 @@ jobs:
           cache: npm
           cache-dependency-path: app/package-lock.json
 
-      - run: npm ci
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
 
       - name: Run tests
         run: npm run test:unit -- --run
+        env:
+          IS_CI: true

@@ -4,4 +4,8 @@
 	"deno.codeLens.referencesAllFunctions": true,
 	"deno.codeLens.test": true,
 	"deno.config": "./supabase/functions/deno.json",
+	"sonarlint.connectedMode.project": {
+		"connectionId": "containerised",
+		"projectKey": "ITeaLab-Tradao"
+	},
 }
