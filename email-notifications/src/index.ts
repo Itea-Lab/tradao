@@ -18,10 +18,8 @@ export default {
 			.gte('start_time', tmrStart.toISOString())
 			.lte('start_time', tmrEnd.toISOString());
 
-		if (!events) return;
-
 		// 1b. If no events, exit early
-		if (events.length === 0) {
+		if (!events || events.length === 0) {
 			console.log("- No events starting tomorrow");
 			return;
 		}
@@ -64,7 +62,7 @@ export default {
 		});
 	},
 
-	async fetch(_req) {
+	fetch(_req) {
 		return new Response();
 	},
 } satisfies ExportedHandler<Env>;
