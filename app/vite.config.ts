@@ -14,9 +14,15 @@ export default defineConfig({
 			provider: webdriverio(),
 		},
 		coverage: {
+			clean: true,
 			enabled: true,
 			include: ["src/**/*.ts", "src/**/*.svelte"],
 			provider: "v8",
+
+			// Ensure consistent lcov coverage reports generation
+			// for SonarCloud scanning in CI environments.
+			reportOnFailure: true,
+			reporter: ["text", "json", "html", "lcov"]
 		},
 		css: {
 			modules: { classNameStrategy: "non-scoped" }
