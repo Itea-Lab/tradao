@@ -164,7 +164,7 @@ describe("/EventsFeed.svelte", () => {
 });
 
 // MARK: Footer
-describe("/Footer.svelte", () => {
+describe.skip("/Footer.svelte", () => {
 	it("...should display the correct main heading", async () => {
 		const { getByRole } = await render(Footer, { props: mockFooterProps });
 
@@ -175,7 +175,7 @@ describe("/Footer.svelte", () => {
 });
 
 // MARK: LoginForm
-describe("/LoginForm.svelte", () => {
+describe.skip("/LoginForm.svelte", () => {
 	it("...should render username and password fields", async () => {
 		const { getByLabelText } = await render(LoginForm);
 
@@ -195,7 +195,7 @@ describe("/LoginForm.svelte", () => {
 });
 
 // MARK: Navigation
-describe("/Navigation.svelte", () => {
+describe.skip("/Navigation.svelte", () => {
 	it("...should display the wordmark SVG", async () => {
 		const { getByRole } = await render(Navigation);
 

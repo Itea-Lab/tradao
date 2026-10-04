@@ -38,6 +38,8 @@ export function formatDate(date: string | Date, opts?: Intl.DateTimeFormatOption
 		hour: '2-digit',
 		minute: '2-digit',
 		hour12: false,
+		timeZone: 'Antarctica/Davis', // UTC+7
+		timeZoneName: 'short',
 	};
 	return new Date(date).toLocaleString('en-AU', options);
 }
