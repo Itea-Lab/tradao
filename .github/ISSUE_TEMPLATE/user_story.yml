@@ -1,0 +1,45 @@
+name: User story
+description: Describe a user-centered requirement with clear completion criteria
+title: "[Story]: "
+labels:
+  - user story
+body:
+  - type: input
+    id: role
+    attributes:
+      label: User role
+      description: Who needs this capability?
+      placeholder: e.g. event organizer, participant, administrator
+    validations:
+      required: true
+  - type: textarea
+    id: capability
+    attributes:
+      label: Capability
+      description: What does the user need to do?
+      placeholder: As a ..., I want to ...
+    validations:
+      required: true
+  - type: textarea
+    id: benefit
+    attributes:
+      label: Benefit
+      description: What outcome or value does this provide?
+      placeholder: So that ...
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance criteria
+      description: List observable conditions that prove the story is complete.
+      placeholder: |
+        - Given ..., when ..., then ...
+        - Given ..., when ..., then ...
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes and dependencies
+      description: Add designs, edge cases, dependencies, links, or open questions.

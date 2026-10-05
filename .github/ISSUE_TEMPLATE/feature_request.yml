@@ -1,0 +1,41 @@
+name: Feature request
+description: Suggest an improvement or new capability
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem to solve
+      description: What user problem or unmet need should this address?
+      placeholder: Describe who is affected and why the current experience is insufficient.
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: Describe the behavior or outcome you want.
+      placeholder: Explain how the feature should work from a user's perspective.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What other approaches, workarounds, or designs did you consider?
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: Scope and impact
+      description: Who benefits, how often would they use it, and what changes might it require?
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Add mockups, screenshots, links, examples, or related issues.
