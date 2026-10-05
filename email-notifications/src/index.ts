@@ -8,10 +8,15 @@ export default {
 	async scheduled(_event, env, _ctx): Promise<void> {
 		console.log(`${formatDateTime(new Date())}:`);
 
-		// 1. Query for events starting the next day
-		// e.g. whose start_time is within 00:00 and 23:59 of the next day
-		const tmrStart = new Date(Date.now() + 24 * 60 * 60 * 1000);
-		const tmrEnd = new Date(tmrStart.getTime() + 23 * 60 * 60 * 1000);
+		// 1a. Query for events starting the next day
+		// e.g. whose start date (derived from start_time) is tomorrow
+		const tmrStart = new Date();
+		tmrStart.setDate(tmrStart.getDate() + 1);
+		tmrStart.setHours(0, 0, 0, 0);
+
+		const tmrEnd = new Date(tmrStart);
+		tmrEnd.setHours(23, 59, 59, 999);
+
 		const { data: events } = await supabase
 			.from('community_events')
 			.select('*, event_tickets(email)')
@@ -27,7 +32,7 @@ export default {
 		// 1c. Log events found to happen tomorrow
 		console.log(`- Found ${events.length} event(s) starting tomorrow:`);
 		for (const event of events) {
-			console.log(`  - ${event.title} (${event.start_time})`);
+			console.log(`  - ${event.title} (${formatDateTime(event.start_time)})`);
 		}
 
 		// 2. Construct email notification

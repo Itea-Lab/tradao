@@ -59,6 +59,7 @@ export function formatDateTime(datetime: string | Date) {
 		hour: "2-digit",
 		minute: "2-digit",
 		hour12: false,
+		timeZone: "Antarctica/Davis",
 		timeZoneName: "shortOffset",
 	});
 }
