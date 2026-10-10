@@ -73,6 +73,7 @@ describe('event creation schema test', () => {
 	const validMockEvent: Tables<'community_events'> = {
 		id: '123e4567-e89b-12d3-a456-426614174000',
 		title: 'Sample Event',
+		slug: 'sample-event',
 		organiser_id: '123e4567-e89b-12d3-a456-426614174000',
 		description: 'This is a sample event for testing.',
 		start_time: '2024-12-01T10:00:00Z',
@@ -87,6 +88,7 @@ describe('event creation schema test', () => {
 	const invalidMockEvent: Tables<'community_events'> = {
 		id: '123e4567-e89b-12d3-a456-426614174000',
 		title: '',
+		slug: 'sample-event',
 		organiser_id: '123e4567-e89b-12d3-a456-426614174000',
 		description: 'This is a sample event for testing.',
 		start_time: '2024-12-01T10:00:00Z',

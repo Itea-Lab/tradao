@@ -73,6 +73,11 @@ export function search<T>(array: T[], query: string, keys: (keyof T)[]): T[] {
 	);
 }
 
+/**
+ * Checks if an event is upcoming based on its date.
+ * @param eventDate The date of the event
+ * @returns True if the event is upcoming, false otherwise
+ */
 export function isEventUpcoming(eventDate: string | Date): boolean {
 	return new Date(eventDate) > new Date();
 }

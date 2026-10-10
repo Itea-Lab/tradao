@@ -1,5 +1,5 @@
 import { createServerClient } from '@supabase/ssr';
-import type { Handle } from '@sveltejs/kit';
+import type { Handle } from '@sveltejs/kit/hooks';
 import type { Database } from '$lib/models';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || '';
