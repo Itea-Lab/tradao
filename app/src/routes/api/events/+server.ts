@@ -1,4 +1,3 @@
-import { json } from "@sveltejs/kit";
 import { errorResponse } from "$lib/utils";
 import { eventCreationSchema } from "$lib/validation";
 import type { RequestHandler } from "./$types";
@@ -72,7 +71,7 @@ export const POST: RequestHandler = async (
 
 		if (error) return errorResponse(status, error.message);
 
-		return json({ event: data[0] }, { status });
+		return Response.json({ event: data[0] }, { status });
 	} catch (e) {
 		if (e instanceof ValidationError) return errorResponse(400, e.errors);
 		if (e instanceof Error) return errorResponse(400, e.message);

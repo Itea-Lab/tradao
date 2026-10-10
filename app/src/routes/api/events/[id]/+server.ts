@@ -1,4 +1,3 @@
-import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
 import { errorResponse } from "$lib/utils";
 
@@ -20,7 +19,7 @@ export const PUT: RequestHandler = async (
 		);
 	}
 
-	return json({ message: "Event updated successfully" });
+	return Response.json({ message: "Event updated successfully" });
 };
 
 export const DELETE: RequestHandler = async (
@@ -39,5 +38,5 @@ export const DELETE: RequestHandler = async (
 		);
 	}
 
-	return json({ message: "Event deleted successfully" });
+	return Response.json({ message: "Event deleted successfully" });
 };

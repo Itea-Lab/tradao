@@ -1,4 +1,3 @@
-import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ request, locals: { supabase } }) => {
@@ -12,8 +11,8 @@ export const POST: RequestHandler = async ({ request, locals: { supabase } }) =>
 	});
 
 	if (signInError) {
-		return json({ errors: [signInError.message] }, { status: 400 });
+		return Response.json({ errors: [signInError.message] }, { status: 400 });
 	}
 
-	return json({ redirectTo }, { status: 200 });
+	return Response.json({ redirectTo }, { status: 200 });
 };

@@ -1,4 +1,3 @@
-import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
 import { errorResponse } from "$lib/utils";
 
@@ -11,7 +10,7 @@ export const GET: RequestHandler = async ({ locals: { supabase }, params }) => {
 		.eq("id", id)
 		.single();
 
-	if (data && !error) return json(data);
+	if (data && !error) return Response.json(data);
 
 	console.error(error);
 	switch (error.code) {

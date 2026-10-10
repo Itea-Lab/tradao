@@ -1,4 +1,3 @@
-import { json } from "@sveltejs/kit";
 import { errorResponse } from "$lib/utils";
 import { eventRegistrationSchema } from "$lib/validation";
 import type { RequestHandler } from "./$types";
@@ -62,5 +61,5 @@ export const POST: RequestHandler = async (
 		);
 	}
 
-	return json({ ticketID: ticket[0].id }, { status: 200 });
+	return Response.json({ ticketID: ticket[0].id }, { status: 200 });
 };
