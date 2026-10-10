@@ -27,12 +27,12 @@ describe('date serialisation utility', () => {
 describe('date formatting utility (test in UTC+7)', () => {
 	it('...should format a date string to a readable format', () => {
 		const dateString = '2024-01-01T12:00:00Z';
-		expect(formatDate(dateString)).toBe('01 Jan 2024, 19:00');
+		expect(formatDate(dateString)).toBe('01 Jan 2024, 19:00 GMT+7');
 	});
 
 	it('...should format a Date object to a readable format', () => {
 		const date = new Date('2024-01-01T12:00:00Z');
-		expect(formatDate(date)).toBe('01 Jan 2024, 19:00');
+		expect(formatDate(date)).toBe('01 Jan 2024, 19:00 GMT+7');
 	});
 });
 
