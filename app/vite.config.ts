@@ -1,12 +1,21 @@
+import adapter from "@sveltejs/adapter-cloudflare";
 import { defineConfig } from "vitest/config";
 import { sveltekit } from "@sveltejs/kit/vite";
 import { webdriverio } from "@vitest/browser-webdriverio"
+import { vitePreprocess } from "@sveltejs/vite-plugin-svelte";
 
 // Detect if running in CI environment such as GitHub Actions
 const isCI = process.env.CI === "true";
 
 export default defineConfig({
-	plugins: [sveltekit()],
+	plugins: [sveltekit({
+		adapter: adapter(),
+		alias: {
+			$components: "./src/components",
+			$lib: "./src/lib",
+		},
+		preprocess: [vitePreprocess()]
+	})],
 	test: {
 		browser: {
 			enabled: true,
