@@ -1,8 +1,8 @@
 <script lang="ts">
 	import SvelteMarkdown from "@humanspeak/svelte-markdown";
-	import PageMetadata from "$components/PageMetadata.svelte";
-	import EventRegistrationForm from "$components/EventRegistrationForm.svelte";
-	import { formatDate, isEventUpcoming } from "$lib/utils";
+	import PageMetadata from "#components/PageMetadata.svelte";
+	import EventRegistrationForm from "#components/EventRegistrationForm.svelte";
+	import { formatDate, isEventUpcoming } from "#lib/utils.js";
 	import type { PageData } from "./$types";
 
 	let { data }: { data: PageData } = $props();

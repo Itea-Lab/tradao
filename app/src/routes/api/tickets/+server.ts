@@ -1,5 +1,5 @@
-import { errorResponse } from "$lib/utils";
-import { eventRegistrationSchema } from "$lib/validation";
+import { errorResponse } from "#lib/utils.js";
+import { eventRegistrationSchema } from "#lib/validation.js";
 import type { RequestHandler } from "./$types";
 import * as yup from "yup";
 

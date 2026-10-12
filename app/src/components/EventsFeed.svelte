@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type { Tables } from "$lib/models";
+	import type { Tables } from "#lib/models.js";
 	import EventCard from "./EventCard.svelte";
-	import { search } from "$lib/utils";
+	import { search } from "#lib/utils.js";
 
 	let { events }: { events: Tables<"community_events">[] } = $props();
 

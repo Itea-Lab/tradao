@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount, onDestroy } from "svelte";
-	import { formatDate } from "$lib/utils";
+	import { formatDate } from "#lib/utils.js";
 
 	let time = $state(new Date());
 	let interval: ReturnType<typeof setInterval>;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { errorResponse, formatDate, serialiseDate, search, isEventUpcoming } from "$lib/utils";
+import { errorResponse, formatDate, serialiseDate, search, isEventUpcoming } from "#lib/utils.js";
 
 describe('error response utility', () => {
 	it('...should create a response with the correct status and message', () => {

@@ -2,7 +2,7 @@
 // for information about these interfaces
 
 import type { Session, SupabaseClient, User } from '@supabase/supabase-js';
-import type { Database } from '$lib/models';
+import type { Database } from '#lib/models.js';
 
 declare global {
 	namespace App {

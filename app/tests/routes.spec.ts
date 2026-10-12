@@ -5,7 +5,7 @@ import { page } from "vitest/browser";
 import { longMockEvents } from "./_mock";
 import HomePage from "../src/routes/+page.svelte";
 import ErrorPage from "../src/routes/+error.svelte";
-import { createSupabaseClient } from "$lib/supabase";
+import { createSupabaseClient } from "#lib/supabase.js";
 
 describe.skip("Home page (/)", () => {
 	it("should render the home page component", async () => {

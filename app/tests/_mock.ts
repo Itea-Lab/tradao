@@ -1,4 +1,4 @@
-import type { Tables } from "$lib/models";
+import type { Tables } from "#lib/models.js";
 
 export const mockEvents: Tables<"community_events">[] = [
 	{

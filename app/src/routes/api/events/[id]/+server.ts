@@ -1,5 +1,5 @@
 import type { RequestHandler } from "./$types";
-import { errorResponse } from "$lib/utils";
+import { errorResponse } from "#lib/utils.js";
 
 export const PUT: RequestHandler = async (
 	{ params: { id }, request, locals: { supabase } },

@@ -1,6 +1,6 @@
 <script lang="ts">
-	import Banner from "$components/Banner.svelte";
-	import PageMetadata from "$components/PageMetadata.svelte";
+	import Banner from "#components/Banner.svelte";
+	import PageMetadata from "#components/PageMetadata.svelte";
 	import type { PageProps } from "./$types";
 
 	let { data }: PageProps = $props();

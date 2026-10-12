@@ -3,9 +3,9 @@
 	import { replaceState } from "$app/navigation";
 	import { page } from "$app/state";
 
-	import Banner from "$components/Banner.svelte";
-	import EventCreationForm from "$components/EventCreationForm.svelte";
-	import PageMetadata from "$components/PageMetadata.svelte";
+	import Banner from "#components/Banner.svelte";
+	import EventCreationForm from "#components/EventCreationForm.svelte";
+	import PageMetadata from "#components/PageMetadata.svelte";
 	import type { PageProps } from "./$types";
 	import SvelteMarkdown from "@humanspeak/svelte-markdown";
 

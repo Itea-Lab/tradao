@@ -1,6 +1,6 @@
 <script lang="ts">
-	import type { Tables } from "$lib/models";
-	import { formatDate, isEventUpcoming } from "$lib/utils";
+	import type { Tables } from "#lib/models.js";
+	import { formatDate, isEventUpcoming } from "#lib/utils.js";
 
 	let { event }: { event: Tables<"community_events"> } = $props();
 

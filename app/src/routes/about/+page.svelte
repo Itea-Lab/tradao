@@ -1,5 +1,5 @@
 <script lang="ts">
-	import PageMetadata from "$components/PageMetadata.svelte";
+	import PageMetadata from "#components/PageMetadata.svelte";
 </script>
 
 <PageMetadata

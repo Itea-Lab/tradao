@@ -1,7 +1,7 @@
 <script lang="ts">
-	import Banner from "$components/Banner.svelte";
-	import LoginForm from "$components/LoginForm.svelte";
-	import PageMetadata from "$components/PageMetadata.svelte";
+	import Banner from "#components/Banner.svelte";
+	import LoginForm from "#components/LoginForm.svelte";
+	import PageMetadata from "#components/PageMetadata.svelte";
 	import type { PageData } from "./$types";
 
 	let { data }: { data: PageData } = $props();

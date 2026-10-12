@@ -5,8 +5,8 @@ import GoogleWallet from "@googleapis/walletobjects";
 import { importPKCS8, type JWTPayload, SignJWT } from "jose";
 
 // Import database models
-import { type Tables } from "./models.ts";
-import { formatDate, serialiseDate } from "./utils.ts";
+import { type Tables } from "./models.js";
+import { formatDate, serialiseDate } from "./utils.js";
 
 // Abstract types. Configurable later.
 type PassClass = GoogleWallet.walletobjects_v1.Schema$GenericClass;

@@ -10,10 +10,6 @@ const isCI = process.env.CI === "true";
 export default defineConfig({
 	plugins: [sveltekit({
 		adapter: adapter(),
-		alias: {
-			$components: "./src/components",
-			$lib: "./src/lib",
-		},
 		preprocess: [vitePreprocess()]
 	})],
 	test: {

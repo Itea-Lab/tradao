@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { TablesUpdate } from "$lib/models";
+	import type { TablesUpdate } from "#lib/models.js";
 
 	// Prop for editing existing event
 	const { event } = $props<{ event?: TablesUpdate<"community_events"> }>();

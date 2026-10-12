@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Constants, type Tables } from "$lib/models";
+	import { Constants, type Tables } from "#lib/models.js";
 
 	const {
 		eventID,

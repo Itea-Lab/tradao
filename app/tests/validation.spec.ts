@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { eventID, participantName, participantEmail, eventImageFile, eventCreationSchema } from "$lib/validation";
-import type { Tables } from '$lib/models';
+import { eventID, participantName, participantEmail, eventImageFile, eventCreationSchema } from "#lib/validation.js";
+import type { Tables } from '#lib/models.js';
 
 describe('event registration schema test', () => {
 	it('initially accepts valid event IDs', () => {

@@ -1,4 +1,4 @@
-import { classId, walletClient } from "$lib/googleWallet";
+import { classId, walletClient } from "#lib/googleWallet.js";
 import type { PageServerLoad } from "./$types";
 
 export const load = (async () => {

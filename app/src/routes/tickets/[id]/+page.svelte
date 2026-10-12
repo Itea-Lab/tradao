@@ -1,8 +1,8 @@
 <script lang="ts">
 	import "add-to-calendar-button";
-	import PageMetadata from "$components/PageMetadata.svelte";
-	import Banner from "$components/Banner.svelte";
-	import { formatDate } from "$lib/utils";
+	import PageMetadata from "#components/PageMetadata.svelte";
+	import Banner from "#components/Banner.svelte";
+	import { formatDate } from "#lib/utils.js";
 	import type { PageProps } from "./$types";
 
 	let { data }: PageProps = $props();
@@ -90,7 +90,6 @@
 				timeZone="currentBrowser"
 				organizer={`${ticket.organiser_name}|contact.itealab@gmail.com`}
 				attendee={`${ticket.name}|${ticket.email}`}
-				buttonStyle="round"
 				listStyle="overlay"
 				lightMode="system"
 			></add-to-calendar-button>

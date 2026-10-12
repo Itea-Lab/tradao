@@ -2,7 +2,7 @@
 	import { onMount, onDestroy } from "svelte";
 	import jsQR from "jsqr";
 	import * as yup from "yup";
-	import type { Tables } from "$lib/models";
+	import type { Tables } from "#lib/models.js";
 
 	let isLoading = $state(false);
 	let error = $state<string | null>(null);

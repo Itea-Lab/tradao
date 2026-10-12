@@ -2,14 +2,14 @@ import { describe, expect, it, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
 import { mockEvent, brokenEvent, longMockEvents, mockEvents, mockFooterProps, mockItems as mockNavItems } from "./_mock";
 
-import Banner from "$components/Banner.svelte";
-import EventCard from "$components/EventCard.svelte";
-import EventsFeed from "$components/EventsFeed.svelte";
-import Footer from "$components/Footer.svelte";
-import LoginForm from "$components/LoginForm.svelte";
-import Navigation from "$components/Navigation.svelte";
-import PageMetadata from "$components/PageMetadata.svelte";
-import TextClock from "$components/TextClock.svelte";
+import Banner from "#components/Banner.svelte";
+import EventCard from "#components/EventCard.svelte";
+import EventsFeed from "#components/EventsFeed.svelte";
+import Footer from "#components/Footer.svelte";
+import LoginForm from "#components/LoginForm.svelte";
+import Navigation from "#components/Navigation.svelte";
+import PageMetadata from "#components/PageMetadata.svelte";
+import TextClock from "#components/TextClock.svelte";
 
 // MARK: Banner
 describe("/Banner.svelte", () => {

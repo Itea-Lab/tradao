@@ -1,4 +1,4 @@
-import { Constants } from "$lib/models";
+import { Constants } from "#lib/models.js";
 import { describe, expect, it } from "vitest";
 
 describe('Database constants', () => {
@@ -9,6 +9,6 @@ describe('Database constants', () => {
 	});
 
 	it('should currently covers three fields of study', () => {
-		expect(Constants.public.Enums.field_of_study.length).toEqual(3);
+		expect(Constants.public.Enums.field_of_study).toHaveLength(3);
 	});
 });
