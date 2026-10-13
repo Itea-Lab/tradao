@@ -4,42 +4,29 @@ title: "[Story]: "
 labels:
   - user story
 body:
-  - type: input
-    id: role
-    attributes:
-      label: User role
-      description: Who needs this capability?
-      placeholder: e.g. event organizer, participant, administrator
-    validations:
-      required: true
+  # Statement
   - type: textarea
-    id: capability
+    id: statement
     attributes:
-      label: Capability
-      description: What does the user need to do?
-      placeholder: As a ..., I want to ...
-    validations:
-      required: true
-  - type: textarea
-    id: benefit
-    attributes:
-      label: Benefit
-      description: What outcome or value does this provide?
-      placeholder: So that ...
-    validations:
-      required: true
+      label: Statement
+      description: What is your user story?
+      placeholder: "As a <stakeholder>, I want <capability> so that <benefit>."
+
+  # Acceptance criteria
   - type: textarea
     id: acceptance_criteria
     attributes:
-      label: Acceptance criteria
-      description: List observable conditions that prove the story is complete.
+      label: Acceptance Criteria
+      description: What do you want accomplished in this user story?
       placeholder: |
         - Given ..., when ..., then ...
         - Given ..., when ..., then ...
     validations:
       required: true
+
+  # Notes and dependencies
   - type: textarea
     id: notes
     attributes:
-      label: Notes and dependencies
+      label: Notes and Dependencies
       description: Add designs, edge cases, dependencies, links, or open questions.
