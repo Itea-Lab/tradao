@@ -53,7 +53,6 @@
 	<div class="s12 m8 field border round prefix">
 		<i class="front">search</i>
 		<input
-			id="search"
 			type="text"
 			placeholder="Search by title or description"
 			value={searchQuery}

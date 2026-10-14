@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { Constants, type Tables } from "#lib/models.js";
+	import { type Tables } from "#lib/models.js";
 
 	const {
-		eventID,
+		event,
 		academicStatus,
 		fieldsOfStudy,
 	}: {
-		eventID: string;
+		event: Tables<"community_events">;
 		academicStatus: Tables<"academic_status">[];
 		fieldsOfStudy: Tables<"fields_of_study">[];
 	} = $props();
@@ -19,7 +19,7 @@
 		e.preventDefault();
 		const form = e.target as HTMLFormElement;
 		const formData = new FormData(form);
-		formData.append("eventID", eventID);
+		formData.append("eventID", event.id);
 
 		const response = await fetch("/api/tickets", {
 			method: "POST",
@@ -69,6 +69,12 @@
 		<option value="Internet of Things">Internet of Things</option>
 		<option value="Cyber Security">Cyber Security</option>
 	</datalist>
+
+	<div class="field label border prefix">
+		<i>badge</i>
+		<input id="ff-name" name="name" type="text" disabled value={event.title} />
+		<label for="ff-name">Event</label>
+	</div>
 
 	<div class="field label border prefix">
 		<i>badge</i>
