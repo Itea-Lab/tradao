@@ -141,8 +141,6 @@
 			</button>
 		</header>
 
-		<div class="space"></div>
-
 		<div class="scroll">
 			<EventRegistrationForm {event} {academicStatus} {fieldsOfStudy} />
 		</div>

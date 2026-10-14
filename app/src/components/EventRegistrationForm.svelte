@@ -71,9 +71,9 @@
 	</datalist>
 
 	<div class="field label border prefix">
-		<i>badge</i>
-		<input id="ff-name" name="name" type="text" disabled value={event.title} />
-		<label for="ff-name">Event</label>
+		<i>event</i>
+		<input id="ff-event" type="text" disabled value={event.title} />
+		<label for="ff-event">Event</label>
 	</div>
 
 	<div class="field label border prefix">
