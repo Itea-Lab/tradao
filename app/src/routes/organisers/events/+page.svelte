@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { fade } from "svelte/transition";
-	import { replaceState } from "$app/navigation";
+	import { goto } from "$app/navigation";
 	import { page } from "$app/state";
 
 	import Banner from "#components/Banner.svelte";
@@ -12,24 +12,24 @@
 	let { data }: PageProps = $props();
 	let searchQuery = $state("");
 
-	function openCreateDialog() {
-		replaceState("", { dialog: "create", itemID: null });
-	}
-
-	function openEditDialog(eventId: string) {
-		replaceState("", { dialog: "edit", itemID: eventId });
-	}
-
-	function openDeleteDialog(eventId: string) {
-		replaceState("", { dialog: "delete", itemID: eventId });
+	function handleKeyDown(event: KeyboardEvent) {
+		if (event.key === "Escape") closeDialog();
 	}
 
 	function closeDialog() {
-		replaceState("", { dialog: null, itemID: null });
+		goto("", {
+			state: { dialog: null, itemID: null },
+			shallow: true,
+			replace: true,
+		});
 	}
 
-	function handleKeyDown(event: KeyboardEvent) {
-		if (event.key === "Escape") closeDialog();
+	function openDialogue(type: "create" | "edit" | "delete", eventId: string | null = null) {
+		goto("", {
+			state: { dialog: type, itemID: eventId },
+			shallow: true,
+			replace: true,
+		});
 	}
 </script>
 
@@ -53,7 +53,7 @@
 		<button
 			type="button"
 			class="responsive large round"
-			onclick={openCreateDialog}
+			onclick={() => openDialogue("create")}
 		>
 			<i>add</i>
 			Create New Event
@@ -138,10 +138,10 @@
 {#snippet EventCard(event: PageProps["data"]["events"][0])}
 	<article class="s12 m6">
 		<nav class="left-align">
-			<button type="button" onclick={() => openEditDialog(event.id)}>
+			<button type="button" onclick={() => openDialogue("edit", event.id)}>
 				<i>edit</i> Edit
 			</button>
-			<button type="button" onclick={() => openDeleteDialog(event.id)}>
+			<button type="button" onclick={() => openDialogue("delete", event.id)}>
 				<i>delete</i> Delete
 			</button>
 		</nav>
