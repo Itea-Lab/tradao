@@ -1,8 +1,15 @@
 <script lang="ts">
 	import type { TablesUpdate } from "#lib/models.js";
+	import { onMount } from "svelte";
 
 	// Prop for editing existing event
-	const { event } = $props<{ event?: TablesUpdate<"community_events"> }>();
+	const {
+		event,
+		onSuccess,
+	}: {
+		event?: TablesUpdate<"community_events">;
+		onSuccess: () => void
+	} = $props();
 
 	let isSubmitting = $state(false);
 	let errors = $state<string[]>([]);
@@ -30,14 +37,14 @@
 
 			case 500: {
 				// 5xx errors
-				errors = [
-					"Something went wrong on our end. Please try again later.",
-				];
+				errors = ["Something went wrong on our end. Please try again later."];
 				isSubmitting = false;
 				break;
 			}
 
 			case 200: {
+				onSuccess();
+				isSubmitting = false;
 				break;
 			}
 
@@ -59,6 +66,27 @@
 			fileInfo = "";
 		}
 	}
+
+	onMount(() => {
+		if (event) {
+			// Pre-fill form fields with existing event data
+			const form = document.querySelector("form") as HTMLFormElement;
+			if (form) {
+				(form.elements.namedItem("title") as HTMLInputElement).value =
+					event.title || "";
+				(form.elements.namedItem("start_time") as HTMLInputElement).value =
+					event.start_time || "";
+				(form.elements.namedItem("end_time") as HTMLInputElement).value =
+					event.end_time || "";
+				(form.elements.namedItem("location") as HTMLInputElement).value =
+					event.location || "";
+				(form.elements.namedItem("category") as HTMLSelectElement).value =
+					event.category || "";
+				(form.elements.namedItem("description") as HTMLTextAreaElement).value =
+					event.description || "";
+			}
+		}
+	});
 </script>
 
 <form method="POST" noValidate onsubmit={handleSubmission}>
@@ -106,12 +134,7 @@
 
 	<div class="field label border prefix">
 		<i>event</i>
-		<input
-			type="datetime-local"
-			id="start_time"
-			name="start_time"
-			required
-		/>
+		<input type="datetime-local" id="start_time" name="start_time" required />
 		<label for="start_time">Start Time</label>
 	</div>
 
@@ -134,10 +157,11 @@
 		<i>category</i>
 		<select id="category" name="category" required>
 			<option value="">Select a category</option>
-			<option value="conference">Conference</option>
-			<option value="meetup">Meetup</option>
-			<option value="pitching">Pitching</option>
-			<option value="workshop">Workshop</option>
+			<option value="Conference">Conference</option>
+			<option value="Meetup">Meetup</option>
+			<option value="Pitching">Pitching</option>
+			<option value="Public Talkshow">Public Talkshow</option>
+			<option value="Workshop">Workshop</option>
 		</select>
 		<label for="category">Category</label>
 		<i>arrow_drop_down</i>

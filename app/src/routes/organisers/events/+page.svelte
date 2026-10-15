@@ -1,13 +1,13 @@
 <script lang="ts">
-	import { fade } from "svelte/transition";
-	import { goto } from "$app/navigation";
+	import { goto, refreshAll } from "$app/navigation";
 	import { page } from "$app/state";
+	import { formatDate } from "#lib/utils.js";
+	import type { PageProps } from "./$types";
 
 	import Banner from "#components/Banner.svelte";
+	import Dialogue from "#components/Dialogue.svelte";
 	import EventCreationForm from "#components/EventCreationForm.svelte";
 	import PageMetadata from "#components/PageMetadata.svelte";
-	import type { PageProps } from "./$types";
-	import SvelteMarkdown from "@humanspeak/svelte-markdown";
 
 	let { data }: PageProps = $props();
 	let searchQuery = $state("");
@@ -24,12 +24,20 @@
 		});
 	}
 
-	function openDialogue(type: "create" | "edit" | "delete", eventId: string | null = null) {
+	function openDialogue(
+		type: "create" | "edit" | "delete",
+		eventId: string | null = null,
+	) {
 		goto("", {
 			state: { dialog: type, itemID: eventId },
 			shallow: true,
 			replace: true,
 		});
+	}
+
+	function onSuccess() {
+		closeDialog();
+		refreshAll();
 	}
 </script>
 
@@ -38,7 +46,7 @@
 <PageMetadata title="Manage Events" />
 <Banner title="Manage Events" />
 
-<!-- Search, filter, create new event -->
+<!-- MARK: Search -->
 <search class="grid middle-align">
 	<div class="s12 m8 field border round prefix">
 		<i class="front">search</i>
@@ -61,22 +69,74 @@
 	</div>
 </search>
 
-<div class="grid">
-	{#each data.events as event}
-		{@render EventCard(event)}
-	{/each}
+<div class="medium-space"></div>
+
+<!-- MARK: Table -->
+<div class="large-height scroll surface" id="table-overflow">
+	<table class="stripes">
+		<thead class="fixed">
+			<tr>
+				<th>Event</th>
+				<th>Category</th>
+				<th>Start Time</th>
+				<th>End Time</th>
+				<th>Location</th>
+				<th>Participants</th>
+				<th>Actions</th>
+			</tr>
+		</thead>
+
+		<tbody>
+			{#each data.events as event}
+				<tr>
+					<td>{event.title}</td>
+					<td>{event.category}</td>
+					<td>{formatDate(event.start_time)}</td>
+					<td>{formatDate(event.end_time)}</td>
+					<td>{event.location}</td>
+					<td class="right-align"
+						>{event.attendee_count === 0
+							? "None"
+							: `${event.attendee_count} people`}</td
+					>
+					<td>
+						<div class="row middle-align" style="gap: 0">
+							<button
+								class="transparent circle"
+								type="button"
+								onclick={() => openDialogue("edit", event.id)}
+							>
+								<i>edit</i>
+							</button>
+							<button
+								class="transparent circle"
+								type="button"
+								onclick={() => openDialogue("delete", event.id)}
+							>
+								<i>delete</i>
+							</button>
+						</div>
+					</td>
+				</tr>
+			{/each}
+		</tbody>
+
+		<tfoot class="fixed">
+			<tr>
+				<td colspan="7" class="right-align">
+					<small>{data.events.length} events</small>
+				</td>
+			</tr>
+		</tfoot>
+	</table>
 </div>
 
+<!-- MARK: Dialogue -->
 {#if page.state.dialog === "create"}
-	<div class="overlay blur active"></div>
-	<dialog transition:fade open>
+	<Dialogue onClose={closeDialog}>
 		<header class="row">
 			<h5 class="max">Create New Event</h5>
-			<button
-				type="button"
-				class="transparent circle"
-				onclick={closeDialog}
-			>
+			<button type="button" class="transparent circle" onclick={closeDialog}>
 				<i>close</i>
 			</button>
 		</header>
@@ -84,21 +144,17 @@
 		<div class="space"></div>
 
 		<div class="scroll">
-			<EventCreationForm />
+			<EventCreationForm {onSuccess} />
 		</div>
-	</dialog>
+	</Dialogue>
 {/if}
 
+<!-- MARK: Dialogue -->
 {#if page.state.dialog === "edit" && page.state.itemID}
-	<div class="overlay blur active"></div>
-	<dialog transition:fade open>
+	<Dialogue onClose={closeDialog}>
 		<header class="row">
 			<h5 class="max">Edit Event</h5>
-			<button
-				type="button"
-				class="transparent circle"
-				onclick={closeDialog}
-			>
+			<button type="button" class="transparent circle" onclick={closeDialog}>
 				<i>close</i>
 			</button>
 		</header>
@@ -108,75 +164,46 @@
 		<div class="scroll">
 			<EventCreationForm
 				event={data.events.find((e) => e.id === page.state.itemID)}
+				{onSuccess}
 			/>
 		</div>
-	</dialog>
+	</Dialogue>
 {/if}
 
+<!-- MARK: Dialogue -->
 {#if page.state.dialog === "delete" && page.state.itemID}
-	<div class="overlay blur active"></div>
-	<dialog transition:fade class="round" open>
+	<Dialogue onClose={closeDialog}>
 		<header class="row">
 			<h5 class="max">Delete Event</h5>
-			<button
-				type="button"
-				class="transparent circle"
-				onclick={closeDialog}
-			>
+			<button type="button" class="transparent circle" onclick={closeDialog}>
 				<i>close</i>
 			</button>
 		</header>
+
+		<div class="space"></div>
+
 		<p>Are you sure you want to delete this event?</p>
+
 		<nav class="right-align">
 			<button type="button" class="responsive error">
 				<i>delete</i> Delete
 			</button>
 		</nav>
-	</dialog>
+	</Dialogue>
 {/if}
 
-{#snippet EventCard(event: PageProps["data"]["events"][0])}
-	<article class="s12 m6">
-		<nav class="left-align">
-			<button type="button" onclick={() => openDialogue("edit", event.id)}>
-				<i>edit</i> Edit
-			</button>
-			<button type="button" onclick={() => openDialogue("delete", event.id)}>
-				<i>delete</i> Delete
-			</button>
-		</nav>
-
-		<h2 class="small">{event.title}</h2>
-
-		<p><i>person</i> {event.attendee_count} attendees registered</p>
-		<p>
-			<i>category</i>
-			<strong>Category:</strong>
-			{event.category}
-		</p>
-		<p>
-			<i>event</i>
-			<strong>Start Time:</strong>
-			{new Date(event.start_time).toLocaleString()}
-		</p>
-		<p>
-			<i>event</i>
-			<strong>End Time:</strong>
-			{new Date(event.end_time).toLocaleString()}
-		</p>
-		<p>
-			<i>location_on</i>
-			<strong>Location:</strong>
-			{event.location}
-		</p>
-
-		{#if event.description}
-			<SvelteMarkdown source={event.description} />
-		{/if}
-	</article>
-{/snippet}
-
 <style>
+	#table-overflow {
+		width: 100%;
+		max-width: 100%;
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	#table-overflow table {
+		min-width: 90ch;
+	}
+
 	.scroll {
 		border-radius: 0;
 	}

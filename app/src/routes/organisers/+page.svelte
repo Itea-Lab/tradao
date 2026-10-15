@@ -31,7 +31,7 @@
 	description="Manage events from creation to ticketing and check-in."
 />
 
-<section style="max-width: 90ch; margin: auto">
+<section id="page">
 	<hr class="bottom-margin" />
 
 	<p class="center-align">
@@ -41,42 +41,32 @@
 
 	<hr class="vertical-margin" />
 
-	<a class="block" href="/organisers/events">
-		<article>
-			<h2><i class="large">event</i> Manage Events</h2>
-			<div class="row right-align">
-				<i>arrow_forward</i>
-			</div>
-		</article>
-	</a>
-
-	<div class="space"></div>
-
-	<a class="block" href="/organisers/tickets">
-		<article>
-			<h2><i class="large">local_activity</i> Manage Tickets</h2>
-			<div class="row right-align">
-				<i>arrow_forward</i>
-			</div>
-		</article>
-	</a>
-
-	<div class="space"></div>
-
-	<a class="block" href="/organisers/check-in">
-		<article>
-			<h2><i class="large">camera</i> Check-in Tickets</h2>
-			<div class="row right-align">
-				<i>arrow_forward</i>
-			</div>
-		</article>
-	</a>
-
-	<div class="space"></div>
+	<div class="grid">
+		{@render Tile("Manage Events", "event", "/organisers/events")}
+		{@render Tile("Manage Tickets", "local_activity", "/organisers/tickets")}
+		{@render Tile("Check-in Tickets", "camera", "/organisers/check-in")}
+	</div>
 </section>
+
+{#snippet Tile(title: string, icon: string, href: string)}
+	<a class="block s12 m4" {href}>
+		<article>
+			<i class="extra">{icon}</i>
+			<h2>{title}</h2>
+			<div class="row right-align">
+				<i>arrow_forward</i>
+			</div>
+		</article>
+	</a>
+{/snippet}
 
 <style>
 	article h2 {
 		font-size: 2em;
+	}
+
+	#page {
+		max-width: 120ch;
+		margin: auto;
 	}
 </style>
