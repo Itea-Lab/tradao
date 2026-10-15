@@ -86,6 +86,7 @@
 		<i>mail</i>
 		<input id="ff-mail" name="email" type="email" required />
 		<label for="ff-mail">Email address</label>
+		<output>Personal address recommended to receive reminder emails without blocking</output>
 	</div>
 
 	<div class="field label border prefix suffix">
