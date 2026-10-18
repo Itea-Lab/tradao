@@ -11,8 +11,7 @@
 
 	let { data }: { data: PageData } = $props();
 	let event = $derived(data.event);
-	let academicStatus = $derived(data.academicStatus);
-	let fieldsOfStudy = $derived(data.fieldsOfStudy);
+	let survey = $derived(data.survey);
 
 	function closeDialog() {
 		goto("", {
@@ -142,7 +141,7 @@
 		</header>
 
 		<div class="scroll">
-			<EventRegistrationForm {event} {academicStatus} {fieldsOfStudy} />
+			<EventRegistrationForm {event} {survey} />
 		</div>
 	</Dialogue>
 {/if}
@@ -186,10 +185,6 @@
 
 		#event-details-page h1 {
 			font-size: 2.5rem;
-		}
-
-		#event-details-page h2 {
-			font-size: 1.5rem;
 		}
 	}
 </style>

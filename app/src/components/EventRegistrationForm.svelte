@@ -3,12 +3,10 @@
 
 	const {
 		event,
-		academicStatus,
-		fieldsOfStudy,
+		survey,
 	}: {
 		event: Tables<"community_events">;
-		academicStatus: Tables<"academic_status">[];
-		fieldsOfStudy: Tables<"fields_of_study">[];
+		survey: Tables<"registration_questions">[];
 	} = $props();
 
 	let isRegistering = $state(false);
@@ -70,11 +68,7 @@
 		<option value="Cyber Security">Cyber Security</option>
 	</datalist>
 
-	<div class="field label border prefix">
-		<i>event</i>
-		<input id="ff-event" type="text" disabled value={event.title} />
-		<label for="ff-event">Event</label>
-	</div>
+	<h5 class="small">Contact</h5>
 
 	<div class="field label border prefix">
 		<i>badge</i>
@@ -89,42 +83,26 @@
 		<output>Personal address recommended to receive reminder emails without blocking</output>
 	</div>
 
-	<div class="field label border prefix suffix">
-		<i>school</i>
-		<select id="ff-year" name="year" required>
-			<option value="">Select Academic Year</option>
-			{#each academicStatus as year}
-				<option value={year.id}>{year.label}</option>
-			{/each}
-		</select>
-		<label for="ff-year">Academic Year</label>
-		<i>arrow_drop_down</i>
-	</div>
-
-	<div class="field label border prefix suffix">
-		<i>book</i>
-		<select id="ff-field" name="field" required>
-			<option value="">Select Field of Study</option>
-			{#each fieldsOfStudy as field}
-				<option value={field.id}>{field.label}</option>
-			{/each}
-		</select>
-		<label for="ff-field">Field of Study</label>
-		<i>arrow_drop_down</i>
-	</div>
+	<h5 class="small">Event survey</h5>
 
 	<div class="field label border prefix">
-		<i>local_library</i>
-		<input id="ff-major" name="major" type="text" list="majors" required />
-		<label for="ff-major">Major</label>
+		<i>event</i>
+		<input id="ff-event" type="text" disabled value={event.title} />
+		<label for="ff-event">Event</label>
 	</div>
 
-	<div class="space"></div>
-
-	<label for="ff-confm" class="checkbox">
-		<input id="ff-confm" name="confirm" type="checkbox" required />{" "}
-		<span>I confirm my participation in the event</span>
-	</label>
+	{#each survey as question}
+		<div class="field label border prefix">
+			<i>question_answer</i>
+			<input
+				id={`ff-question-${question.id}`}
+				name={`question-${question.id}`}
+				type="text"
+				required={question.is_required}
+			/>
+			<label for={`ff-question-${question.id}`}>{question.question_text}</label>
+		</div>
+	{/each}
 
 	<div class="space"></div>
 
