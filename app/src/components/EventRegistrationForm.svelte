@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { registerEvent } from "#lib/remotes/events.remote.js";
 	import { type Tables } from "#lib/models.js";
 
 	const {
@@ -12,54 +13,10 @@
 	let isRegistering = $state(false);
 	let errors = $state<string[]>([]);
 
-	async function handleFormSubmission(e: Event) {
-		isRegistering = true;
-		e.preventDefault();
-		const form = e.target as HTMLFormElement;
-		const formData = new FormData(form);
-		formData.append("eventID", event.id);
-
-		const response = await fetch("/api/tickets", {
-			method: "POST",
-			body: formData,
-		});
-
-		switch (response.status) {
-			case 400: {
-				// 4xx errors
-				const data = await response.json();
-				errors = data.error;
-				isRegistering = false;
-				break;
-			}
-
-			case 500: {
-				// 5xx errors
-				errors = [
-					"Something went wrong on our end. Please try again later.",
-				];
-				isRegistering = false;
-				break;
-			}
-
-			case 200: {
-				// ticketID
-				const data = await response.json();
-				const ticketID = data.ticketID;
-				globalThis.location.href = `/tickets/${ticketID}`;
-				break;
-			}
-
-			default: {
-				// Unexpected status code
-				errors = ["Unexpected error. Please try again later."];
-				isRegistering = false;
-			}
-		}
-	}
+	const { name, email, eventID, surveyAnswers } = registerEvent.fields;
 </script>
 
-<form method="POST" class="mt-2" onsubmit={handleFormSubmission} noValidate>
+<form {...registerEvent}>
 	<datalist id="majors">
 		<option value="Data Science">Data Science</option>
 		<option value="Software Development">Software Development</option>
@@ -72,33 +29,44 @@
 
 	<div class="field label border prefix">
 		<i>badge</i>
-		<input id="ff-name" name="name" type="text" required />
+		<input id="ff-name" {...name.as("text")} />
 		<label for="ff-name">Full name</label>
 	</div>
 
 	<div class="field label border prefix">
 		<i>mail</i>
-		<input id="ff-mail" name="email" type="email" required />
+		<input id="ff-mail" {...email.as("email")} />
 		<label for="ff-mail">Email address</label>
-		<output>Personal address recommended to receive reminder emails without blocking</output>
+		<output
+			>Personal address recommended to receive reminder emails without blocking</output
+		>
 	</div>
 
 	<h5 class="small">Event survey</h5>
 
+	<input type="text" {...eventID.as("text", event.id)} hidden />
+
 	<div class="field label border prefix">
 		<i>event</i>
-		<input id="ff-event" type="text" disabled value={event.title} />
+		<input id="ff-event" value={event.title} disabled />
 		<label for="ff-event">Event</label>
 	</div>
 
-	{#each survey as question}
+	{#each survey as question, index}
+		<!-- Question ID (hidden) -->
+		<input
+			type="text"
+			{...surveyAnswers[index].questionID.as("text", question.id)}
+			hidden
+		/>
+
+		<!-- Question answer -->
 		<div class="field label border prefix">
 			<i>question_answer</i>
 			<input
 				id={`ff-question-${question.id}`}
-				name={`question-${question.id}`}
 				type="text"
-				required={question.is_required}
+				{...surveyAnswers[index].answer.as("text")}
 			/>
 			<label for={`ff-question-${question.id}`}>{question.question_text}</label>
 		</div>
@@ -117,7 +85,5 @@
 		<div class="space"></div>
 	{/if}
 
-	<button type="submit" class="button" disabled={isRegistering}>
-		Submit
-	</button>
+	<button type="submit" class="button" disabled={isRegistering}>Submit</button>
 </form>
