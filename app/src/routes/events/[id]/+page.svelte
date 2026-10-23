@@ -140,7 +140,7 @@
 			</button>
 		</header>
 
-		<div class="scroll">
+		<div class="scroll no-round">
 			<EventRegistrationForm {event} {survey} />
 		</div>
 	</Dialogue>

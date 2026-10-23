@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { registerEvent } from "#lib/remotes/events.remote.js";
 	import { type Tables } from "#lib/models.js";
+	import { RemoteFields } from "./remote_fields";
 
 	const {
 		event,
@@ -17,30 +18,17 @@
 </script>
 
 <form {...registerEvent}>
-	<datalist id="majors">
-		<option value="Data Science">Data Science</option>
-		<option value="Software Development">Software Development</option>
-		<option value="Artificial Intelligence">Artificial Intelligence</option>
-		<option value="Internet of Things">Internet of Things</option>
-		<option value="Cyber Security">Cyber Security</option>
-	</datalist>
+	<h5 class="small">Contact information</h5>
 
-	<h5 class="small">Contact</h5>
+	<RemoteFields.Text id="ff-name" icon="badge" label="Full name" field={name} />
 
-	<div class="field label border prefix">
-		<i>badge</i>
-		<input id="ff-name" {...name.as("text")} />
-		<label for="ff-name">Full name</label>
-	</div>
-
-	<div class="field label border prefix">
-		<i>mail</i>
-		<input id="ff-mail" {...email.as("email")} />
-		<label for="ff-mail">Email address</label>
-		<output
-			>Personal address recommended to receive reminder emails without blocking</output
-		>
-	</div>
+	<RemoteFields.Text
+		id="ff-mail"
+		icon="mail"
+		label="Email address"
+		field={email}
+		notes="Personal address recommended to receive reminder emails without blocking"
+	/>
 
 	<h5 class="small">Event survey</h5>
 
@@ -61,15 +49,19 @@
 		/>
 
 		<!-- Question answer -->
-		<div class="field label border prefix">
-			<i>question_answer</i>
-			<input
-				id={`ff-question-${question.id}`}
-				type="text"
-				{...surveyAnswers[index].answer.as("text")}
+		{#if question.question_type === "major"}
+			<RemoteFields.Major
+				id={question.id}
+				label={question.question_text}
+				field={surveyAnswers[index].answer}
 			/>
-			<label for={`ff-question-${question.id}`}>{question.question_text}</label>
-		</div>
+		{:else}
+			<RemoteFields.Text
+				id={question.id}
+				label={question.question_text}
+				field={surveyAnswers[index].answer}
+			/>
+		{/if}
 	{/each}
 
 	<div class="space"></div>
@@ -85,5 +77,7 @@
 		<div class="space"></div>
 	{/if}
 
-	<button type="submit" class="button" disabled={isRegistering}>Submit</button>
+	<button type="submit" class="button responsive" disabled={isRegistering}>
+		Let's go!
+	</button>
 </form>
