@@ -1,161 +1,94 @@
 <script lang="ts">
 	import type { TablesUpdate } from "#lib/models.js";
-	import { onMount } from "svelte";
+	import { createEvent } from "#lib/remotes/events.remote.js";
+	import type { RemoteFormIssue } from "$app/server";
 
 	// Prop for editing existing event
 	const {
 		event,
-		onSuccess,
 	}: {
 		event?: TablesUpdate<"community_events">;
-		onSuccess: () => void
+		onSuccess: () => void;
 	} = $props();
 
 	let isSubmitting = $state(false);
-	let errors = $state<string[]>([]);
-	let fileInfo = $state("");
 
-	async function handleSubmission(event: Event) {
-		isSubmitting = true;
-		event.preventDefault();
-		const form = event.target as HTMLFormElement;
-		const formData = new FormData(form);
+	const {
+		allIssues,
+		title,
+		start_time,
+		end_time,
+		location,
+		category,
+		thumbnail,
+		description,
+	} = createEvent.fields;
 
-		const response = await fetch("/api/events", {
-			method: "POST",
-			body: formData,
-		});
-
-		switch (response.status) {
-			case 400: {
-				// 4xx errors
-				const data = await response.json();
-				errors = data.errors;
-				isSubmitting = false;
-				break;
-			}
-
-			case 500: {
-				// 5xx errors
-				errors = ["Something went wrong on our end. Please try again later."];
-				isSubmitting = false;
-				break;
-			}
-
-			case 200: {
-				onSuccess();
-				isSubmitting = false;
-				break;
-			}
-
-			default:
-				// Unexpected status code
-				errors = ["Unexpected error. Please try again later."];
-				break;
-		}
+	/** Format form issues into a string for display */
+	function issuesText(issues?: RemoteFormIssue[]) {
+		if (!issues) return "";
+		return issues.map((issue) => issue.message).join(", ");
 	}
 
-	function handleFileChange(event: Event) {
-		const input = event.target as HTMLInputElement;
-		const file = input.files?.[0];
-
-		if (file) {
-			const sizeInKB = (file.size / 1024).toFixed(2);
-			fileInfo = `${file.name} (${sizeInKB} KB)`;
-		} else {
-			fileInfo = "";
-		}
+	function fileInfo(file?: File) {
+		if (!file) return "PNG/JPEG/WebP, 5MB max.";
+		return `${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
 	}
-
-	onMount(() => {
-		if (event) {
-			// Pre-fill form fields with existing event data
-			const form = document.querySelector("form") as HTMLFormElement;
-			if (form) {
-				(form.elements.namedItem("title") as HTMLInputElement).value =
-					event.title || "";
-				(form.elements.namedItem("start_time") as HTMLInputElement).value =
-					event.start_time || "";
-				(form.elements.namedItem("end_time") as HTMLInputElement).value =
-					event.end_time || "";
-				(form.elements.namedItem("location") as HTMLInputElement).value =
-					event.location || "";
-				(form.elements.namedItem("category") as HTMLSelectElement).value =
-					event.category || "";
-				(form.elements.namedItem("description") as HTMLTextAreaElement).value =
-					event.description || "";
-			}
-		}
-	});
 </script>
 
-<form method="POST" noValidate onsubmit={handleSubmission}>
-	{@render Step1()}
-
-	{#if errors.length > 0}
-		<section class="error">
-			<h5>Oops! There were some problems with registering!</h5>
-			<ul>
-				{#each errors as error}
-					<li>{error}</li>
-				{/each}
-			</ul>
-		</section>
-	{/if}
-
-	<div class="medium-space"></div>
-	<button type="submit" class="responsive" disabled={isSubmitting}>
-		Create Event
-	</button>
-</form>
-
-{#snippet Step1()}
+<form {...createEvent} enctype="multipart/form-data">
 	<div class="row">
 		<button type="button">
 			<i>image</i>
 			<span>Image Thumbnail</span>
 			<input
-				type="file"
-				id="image"
-				name="imageFile"
+				id="ff-thumbnail"
 				accept="image/png,image/jpeg,image/webp"
-				required
-				onchange={handleFileChange}
+				{...thumbnail.as("file")}
 			/>
 		</button>
-		<p>{fileInfo}</p>
+		<p>{fileInfo(thumbnail.value())}</p>
 	</div>
 
-	<div class="field label border prefix">
+	<div class={["field", "label", "border", "prefix", title.issues() && "invalid"]}>
 		<i>title</i>
-		<input type="text" id="title" name="title" required />
-		<label for="title">Title</label>
+		<input id="ff-title" {...title.as("text", event?.title)} />
+		<label for="ff-title">Title</label>
+		{#if title.issues()}
+			<output class="invalid">{issuesText(title.issues())}</output>
+		{/if}
 	</div>
 
-	<div class="field label border prefix">
+	<div class={["field", "label", "border", "prefix", start_time.issues() && "invalid"]}>
 		<i>event</i>
-		<input type="datetime-local" id="start_time" name="start_time" required />
-		<label for="start_time">Start Time</label>
+		<input id="ff-start" {...start_time.as("datetime-local", event?.start_time)} />
+		<label for="ff-start">Start Time</label>
+		{#if start_time.issues()}
+			<output class="invalid">{issuesText(start_time.issues())}</output>
+		{/if}
 	</div>
 
-	<div class="field label border prefix">
+	<div class={["field", "label", "border", "prefix", end_time.issues() && "invalid"]}>
 		<i>event</i>
-		<input type="datetime-local" id="end_time" name="end_time" required />
-		<label for="end_time">End Time</label>
+		<input id="ff-end" {...end_time.as("datetime-local", event?.end_time)} />
+		<label for="ff-end">End Time</label>
+		{#if end_time.issues()}
+			<output class="invalid">{issuesText(end_time.issues())}</output>
+		{/if}
 	</div>
 
-	<div class="field label border prefix">
-		<i>location_on</i>
-		<input type="text" id="location" name="location" required />
-		<label for="location">Location</label>
-		<span class="helper">
-			Can simply be room name, which defaults to Swinburne A35 building
-		</span>
-	</div>
-
-	<div class="field label border prefix suffix">
+	<div
+		class={[
+			"field",
+			"label",
+			"border",
+			"prefix",
+			"suffix",
+			category.issues() && "invalid",
+		]}
+	>
 		<i>category</i>
-		<select id="category" name="category" required>
+		<select id="ff-category" {...category.as("select", event?.category)}>
 			<option value="">Select a category</option>
 			<option value="Conference">Conference</option>
 			<option value="Meetup">Meetup</option>
@@ -163,12 +96,46 @@
 			<option value="Public Talkshow">Public Talkshow</option>
 			<option value="Workshop">Workshop</option>
 		</select>
-		<label for="category">Category</label>
+		<label for="ff-category">Category</label>
 		<i>arrow_drop_down</i>
+		{#if category.issues()}
+			<output class="invalid">{issuesText(category.issues())}</output>
+		{/if}
 	</div>
 
-	<div class="field textarea label border">
-		<textarea id="description" name="description" rows="10"></textarea>
-		<label for="description">Event Description</label>
+	<div class={["field", "label", "border", "prefix", location.issues() && "invalid"]}>
+		<i>location_on</i>
+		<input id="ff-location" {...location.as("text", event?.location ?? "")} />
+		<label for="ff-location">Location</label>
+		<span class="helper"> Defaults to Swinburne A35 building </span>
+		{#if location.issues()}
+			<output class="invalid">{issuesText(location.issues())}</output>
+		{/if}
 	</div>
-{/snippet}
+
+	<div
+		class={[
+			"field",
+			"textarea",
+			"label",
+			"border",
+			"prefix",
+			description.issues() && "invalid",
+		]}
+	>
+		<i>description</i>
+		<textarea
+			id="ff-description"
+			rows="10"
+			{...description.as("text", event?.description ?? "")}></textarea>
+		<label for="ff-description">Event Description</label>
+		{#if description.issues()}
+			<output class="invalid">{issuesText(description.issues())}</output>
+		{/if}
+	</div>
+
+	<div class="medium-space"></div>
+	<button type="submit" class="responsive" disabled={isSubmitting}>
+		Create Event
+	</button>
+</form>
