@@ -2,6 +2,7 @@
 	import { goto, refreshAll } from "$app/navigation";
 	import { page } from "$app/state";
 	import { formatDate } from "#lib/utils.js";
+	import { getEventParticipants } from "#lib/remotes/events.remote.js";
 	import type { PageProps } from "./$types";
 
 	import Banner from "#components/Banner.svelte";
@@ -11,6 +12,11 @@
 
 	let { data }: PageProps = $props();
 	let searchQuery = $state("");
+
+	function getParticipantsCount(eventId: string) {
+		const event = data.events.find((e) => e.id === eventId);
+		return event ? event.attendee_count : 0;
+	}
 
 	function handleKeyDown(event: KeyboardEvent) {
 		if (event.key === "Escape") closeDialog();
@@ -25,7 +31,7 @@
 	}
 
 	function openDialogue(
-		type: "create" | "edit" | "delete",
+		type: "create" | "edit" | "delete" | "participants",
 		eventId: string | null = null,
 	) {
 		goto("", {
@@ -57,7 +63,8 @@
 			bind:value={searchQuery}
 		/>
 	</div>
-	<div class="s12 m4 right-align">
+
+	<div class="s12 m3 right-align">
 		<button
 			type="button"
 			class="responsive large round"
@@ -65,6 +72,13 @@
 		>
 			<i>add</i>
 			Create New Event
+		</button>
+	</div>
+
+	<div class="s12 m1 right-align">
+		<button type="button" class="responsive large round">
+			<i>refresh</i>
+			Refresh
 		</button>
 	</div>
 </search>
@@ -94,11 +108,14 @@
 					<td>{formatDate(event.start_time)}</td>
 					<td>{formatDate(event.end_time)}</td>
 					<td>{event.location}</td>
-					<td class="right-align"
-						>{event.attendee_count === 0
-							? "None"
-							: `${event.attendee_count} people`}</td
-					>
+					<td class="center-align">
+						<button
+							class="responsive"
+							onclick={() => openDialogue("participants", event.id)}
+						>
+							{event.attendee_count === 0 ? "None" : event.attendee_count}
+						</button>
+					</td>
 					<td>
 						<div class="row middle-align" style="gap: 0">
 							<button
@@ -136,8 +153,10 @@
 	<Dialogue onClose={closeDialog}>
 		<header class="row">
 			<h5 class="max">Create New Event</h5>
-			<button type="button" class="transparent circle" onclick={closeDialog}>
+
+			<button class="round border" onclick={closeDialog}>
 				<i>close</i>
+				<span class="tooltip left">Close</span>
 			</button>
 		</header>
 
@@ -154,8 +173,10 @@
 	<Dialogue onClose={closeDialog}>
 		<header class="row">
 			<h5 class="max">Edit Event</h5>
-			<button type="button" class="transparent circle" onclick={closeDialog}>
+
+			<button class="round border" onclick={closeDialog}>
 				<i>close</i>
+				<span class="tooltip left">Close</span>
 			</button>
 		</header>
 
@@ -175,8 +196,10 @@
 	<Dialogue onClose={closeDialog}>
 		<header class="row">
 			<h5 class="max">Delete Event</h5>
-			<button type="button" class="transparent circle" onclick={closeDialog}>
+
+			<button class="round border" onclick={closeDialog}>
 				<i>close</i>
+				<span class="tooltip left">Close</span>
 			</button>
 		</header>
 
@@ -189,6 +212,68 @@
 				<i>delete</i> Delete
 			</button>
 		</nav>
+	</Dialogue>
+{/if}
+
+<!-- MARK: Dialogue -->
+{#if page.state.dialog === "participants" && page.state.itemID}
+	<Dialogue onClose={closeDialog}>
+		<header class="row">
+			<h5 class="max">Attendees</h5>
+
+			<button class="round border">
+				<i>open_in_full</i>
+				<span class="tooltip left">View in Manage Tickets</span>
+			</button>
+
+			<button class="round border">
+				<i>refresh</i>
+				<span class="tooltip left">Refresh</span>
+			</button>
+
+			<button class="round border" onclick={closeDialog}>
+				<i>close</i>
+				<span class="tooltip left">Close</span>
+			</button>
+		</header>
+
+		<div class="medium-height scroll surface-container-high">
+			{#if getParticipantsCount(page.state.itemID) === 0}
+				<p class="center-align">No participants found.</p>
+			{:else}
+				<table class="stripes">
+					<thead class="fixed">
+						<tr>
+							<th>Name</th>
+							<th>Email</th>
+						</tr>
+					</thead>
+
+					<tbody>
+						{#each await getEventParticipants(page.state.itemID) as participant}
+							<tr>
+								<td>{participant.name}</td>
+								<td>
+									<a href="mailto:{participant.email}">
+										{participant.email}
+									</a>
+								</td>
+							</tr>
+						{/each}
+					</tbody>
+
+					<tfoot class="fixed">
+						<tr>
+							<td colspan="2" class="right-align">
+								<small>
+									{getParticipantsCount(page.state.itemID)} participants
+								</small>
+							</td>
+						</tr>
+					</tfoot>
+				</table>
+			{/if}
+		</div>
 	</Dialogue>
 {/if}
 
