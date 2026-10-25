@@ -1,7 +1,8 @@
 <script lang="ts">
 	import type { TablesUpdate } from "#lib/models.js";
+	import { issuesText, fileInfo } from "#lib/utils.js";
 	import { createEvent, getEventQuestionTypes } from "#lib/remotes/events.remote.js";
-	import type { RemoteFormIssue } from "$app/server";
+	import { RemoteFields } from "./remote_fields";
 
 	// Prop for editing existing event
 	const {
@@ -40,34 +41,9 @@
 			questionRows = [{}];
 		}
 	}
-
-	/** Format form issues into a string for display */
-	function issuesText(issues?: RemoteFormIssue[]) {
-		if (!issues) return "";
-		return issues.map((issue) => issue.message).join(", ");
-	}
-
-	/** Format file information into a string for display */
-	function fileInfo(defaultText: string, file?: File) {
-		if (!file) return defaultText;
-		return `${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
-	}
 </script>
 
 <form {...createEvent} enctype="multipart/form-data">
-	<div class="row">
-		<button type="button">
-			<i>image</i>
-			<span>Image Thumbnail</span>
-			<input
-				id="ff-thumbnail"
-				accept="image/png,image/jpeg,image/webp"
-				{...thumbnail.as("file")}
-			/>
-		</button>
-		<p>{fileInfo("PNG/JPEG/WebP, 5MB max.", thumbnail.value())}</p>
-	</div>
-
 	<h5 class="small">1. Basic details</h5>
 
 	<div class={["field label border prefix", title.issues() && "invalid"]}>
@@ -79,23 +55,8 @@
 		{/if}
 	</div>
 
-	<div class={["field label border prefix", start_time.issues() && "invalid"]}>
-		<i>event</i>
-		<input id="ff-start" {...start_time.as("datetime-local", event?.start_time)} />
-		<label for="ff-start">Start Time</label>
-		{#if start_time.issues()}
-			<output class="invalid">{issuesText(start_time.issues())}</output>
-		{/if}
-	</div>
-
-	<div class={["field label border prefix", end_time.issues() && "invalid"]}>
-		<i>event</i>
-		<input id="ff-end" {...end_time.as("datetime-local", event?.end_time)} />
-		<label for="ff-end">End Time</label>
-		{#if end_time.issues()}
-			<output class="invalid">{issuesText(end_time.issues())}</output>
-		{/if}
-	</div>
+	<RemoteFields.LocalDatetime id="ff-start" label="Start Time" field={start_time} />
+	<RemoteFields.LocalDatetime id="ff-end" label="End Time" field={end_time} />
 
 	<div class={["field label border prefix suffix", category.issues() && "invalid"]}>
 		<i>category</i>
@@ -114,7 +75,22 @@
 		{/if}
 	</div>
 
-	<h5 class="small">2. Optional details</h5>
+	<h5 class="small">2. Thumbnail image</h5>
+
+	<div class="row">
+		<button type="button" class="border">
+			<i>image</i>
+			<span>Upload Thumbnail</span>
+			<input
+				id="ff-thumbnail"
+				accept="image/png,image/jpeg,image/webp"
+				{...thumbnail.as("file")}
+			/>
+		</button>
+		<p>{fileInfo("PNG/JPEG/WebP, 5MB max.", thumbnail.value())}</p>
+	</div>
+
+	<h5 class="small">3. Optional details</h5>
 
 	<div class={["field label border prefix", location.issues() && "invalid"]}>
 		<i>location_on</i>
