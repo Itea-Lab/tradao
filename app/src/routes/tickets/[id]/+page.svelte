@@ -1,5 +1,5 @@
 <script lang="ts">
-	import "add-to-calendar-button";
+	import { onMount } from "svelte";
 	import PageMetadata from "#components/PageMetadata.svelte";
 	import Banner from "#components/Banner.svelte";
 	import { formatDate } from "#lib/utils.js";
@@ -14,6 +14,10 @@
 		start_time: ticket.event_start_time?.split("T")[1]?.substring(0, 5),
 		end_time: ticket.event_end_time?.split("T")[1]?.substring(0, 5),
 	});
+
+	onMount(() => {
+		import("add-to-calendar-button");
+	})
 </script>
 
 <PageMetadata
