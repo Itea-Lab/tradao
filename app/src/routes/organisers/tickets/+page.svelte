@@ -19,11 +19,7 @@
 <!-- MARK: Filter -->
 <search class="grid middle-align">
 	<div class="s12 m4 field label border round suffix">
-		<select
-			id="event"
-			title="Filter by event"
-			data-testid="event-select"
-		>
+		<select id="event" title="Filter by event" data-testid="event-select">
 			<option value="all">All Events</option>
 		</select>
 		<label for="event">Filter by event</label>
@@ -51,9 +47,24 @@
 				<tr>
 					<td style="width: 25%;">{ticket.event_title}</td>
 					<td style="width: 20%;">{ticket.name}</td>
-					<td style="width: 20%;">{ticket.email}</td>
+
+					<td style="width: 20%;">
+						<a class="chip" href={`mailto:${ticket.email}`}>
+							<i>email</i>
+							<span>{ticket.email}</span>
+						</a>
+					</td>
+
 					<!-- TODO: Use dl/dt/dd -->
-					<td style="width: 25%;">Lorem ipsum</td>
+					<td style="width: 25%;">
+						<dl>
+							{#each ticket.survey.toSorted( (a, b) => a.question.question_text.localeCompare(b.question.question_text), ) as survey}
+								<dt>{survey.question.question_text}</dt>
+								<dd>{survey.answer_text}</dd>
+							{/each}
+						</dl>
+					</td>
+
 					<td style="width: 10%;">
 						<div class="row" style="gap: 0;">
 							<button class="transparent circle"><i>edit</i></button>
@@ -73,3 +84,13 @@
 		</tfoot>
 	</table>
 </div>
+
+<style>
+	dt {
+		font-weight: bold;
+	}
+
+	dd::before {
+		content: "→ ";
+	}
+</style>

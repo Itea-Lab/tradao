@@ -10,7 +10,9 @@ const isCI = process.env.CI === "true";
 export default defineConfig({
 	plugins: [sveltekit({
 		adapter: adapter(),
-		preprocess: [vitePreprocess()]
+		preprocess: [vitePreprocess()],
+		experimental: { remoteFunctions: true },
+		compilerOptions: { experimental: { async: true } },
 	})],
 	test: {
 		browser: {
