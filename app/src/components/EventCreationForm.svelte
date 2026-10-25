@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { TablesUpdate } from "#lib/models.js";
-	import { createEvent } from "#lib/remotes/events.remote.js";
+	import { createEvent, getEventQuestionTypes } from "#lib/remotes/events.remote.js";
 	import type { RemoteFormIssue } from "$app/server";
 
 	// Prop for editing existing event
@@ -11,18 +11,35 @@
 		onSuccess: () => void;
 	} = $props();
 
+	/** Store multiple survey questions */
+	let questionRows = $state([{}]);
 	let isSubmitting = $state(false);
 
 	const {
-		allIssues,
 		title,
 		start_time,
 		end_time,
 		location,
 		category,
 		thumbnail,
-		description,
+		description: desc,
+		survey,
 	} = createEvent.fields;
+
+	/** Add a new survey question row */
+	function addQuestion() {
+		questionRows.push({});
+	}
+
+	/** Remove a survey question row */
+	function removeQuestion(index: number) {
+		if (questionRows.length > 1) {
+			questionRows.splice(index, 1);
+		} else {
+			// Remove entirely
+			questionRows = [{}];
+		}
+	}
 
 	/** Format form issues into a string for display */
 	function issuesText(issues?: RemoteFormIssue[]) {
@@ -30,8 +47,9 @@
 		return issues.map((issue) => issue.message).join(", ");
 	}
 
-	function fileInfo(file?: File) {
-		if (!file) return "PNG/JPEG/WebP, 5MB max.";
+	/** Format file information into a string for display */
+	function fileInfo(defaultText: string, file?: File) {
+		if (!file) return defaultText;
 		return `${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
 	}
 </script>
@@ -47,10 +65,12 @@
 				{...thumbnail.as("file")}
 			/>
 		</button>
-		<p>{fileInfo(thumbnail.value())}</p>
+		<p>{fileInfo("PNG/JPEG/WebP, 5MB max.", thumbnail.value())}</p>
 	</div>
 
-	<div class={["field", "label", "border", "prefix", title.issues() && "invalid"]}>
+	<h5 class="small">1. Basic details</h5>
+
+	<div class={["field label border prefix", title.issues() && "invalid"]}>
 		<i>title</i>
 		<input id="ff-title" {...title.as("text", event?.title)} />
 		<label for="ff-title">Title</label>
@@ -59,7 +79,7 @@
 		{/if}
 	</div>
 
-	<div class={["field", "label", "border", "prefix", start_time.issues() && "invalid"]}>
+	<div class={["field label border prefix", start_time.issues() && "invalid"]}>
 		<i>event</i>
 		<input id="ff-start" {...start_time.as("datetime-local", event?.start_time)} />
 		<label for="ff-start">Start Time</label>
@@ -68,7 +88,7 @@
 		{/if}
 	</div>
 
-	<div class={["field", "label", "border", "prefix", end_time.issues() && "invalid"]}>
+	<div class={["field label border prefix", end_time.issues() && "invalid"]}>
 		<i>event</i>
 		<input id="ff-end" {...end_time.as("datetime-local", event?.end_time)} />
 		<label for="ff-end">End Time</label>
@@ -77,16 +97,7 @@
 		{/if}
 	</div>
 
-	<div
-		class={[
-			"field",
-			"label",
-			"border",
-			"prefix",
-			"suffix",
-			category.issues() && "invalid",
-		]}
-	>
+	<div class={["field label border prefix suffix", category.issues() && "invalid"]}>
 		<i>category</i>
 		<select id="ff-category" {...category.as("select", event?.category)}>
 			<option value="">Select a category</option>
@@ -103,7 +114,9 @@
 		{/if}
 	</div>
 
-	<div class={["field", "label", "border", "prefix", location.issues() && "invalid"]}>
+	<h5 class="small">2. Optional details</h5>
+
+	<div class={["field label border prefix", location.issues() && "invalid"]}>
 		<i>location_on</i>
 		<input id="ff-location" {...location.as("text", event?.location ?? "")} />
 		<label for="ff-location">Location</label>
@@ -113,26 +126,60 @@
 		{/if}
 	</div>
 
-	<div
-		class={[
-			"field",
-			"textarea",
-			"label",
-			"border",
-			"prefix",
-			description.issues() && "invalid",
-		]}
-	>
+	<div class={["field textarea label border prefix", desc.issues() && "invalid"]}>
 		<i>description</i>
 		<textarea
 			id="ff-description"
 			rows="10"
-			{...description.as("text", event?.description ?? "")}></textarea>
+			{...desc.as("text", event?.description ?? "")}></textarea>
 		<label for="ff-description">Event Description</label>
-		{#if description.issues()}
-			<output class="invalid">{issuesText(description.issues())}</output>
+		{#if desc.issues()}
+			<output class="invalid">{issuesText(desc.issues())}</output>
 		{/if}
 	</div>
+
+	<h5 class="small">3. Survey questions</h5>
+
+	{#each questionRows as _, i}
+		<div class="grid">
+			<div
+				class={[
+					"field label border prefix s12 m7",
+					survey[i].question.issues() && "invalid",
+				]}
+			>
+				<i>chat_info</i>
+				<input id={`survey-question-${i}`} {...survey[i].question.as("text")} />
+				<label for={`survey-question-${i}`}>Question {i + 1}</label>
+			</div>
+
+			<div
+				class={[
+					"field label border prefix s12 m4",
+					survey[i].type.issues() && "invalid",
+				]}
+			>
+				<i>data_object</i>
+				<select id={`survey-type-${i}`} {...survey[i].type.as("select")}>
+					<option value="">Pick one</option>
+					{#each await getEventQuestionTypes() as type}
+						<option value={type.slug}>{type.description}</option>
+					{/each}
+				</select>
+				<label for={`survey-type-${i}`}>Type</label>
+			</div>
+
+			<button type="button" class="border s12 m1" onclick={() => removeQuestion(i)}>
+				<i>close</i>
+			</button>
+		</div>
+	{/each}
+
+	<div class="space"></div>
+
+	<button type="button" class="border" onclick={addQuestion}>
+		<i>add</i> Add Question
+	</button>
 
 	<div class="medium-space"></div>
 	<button type="submit" class="responsive" disabled={isSubmitting}>

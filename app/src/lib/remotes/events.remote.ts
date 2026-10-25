@@ -29,6 +29,15 @@ export const getEventParticipants = query(eventID, async (eventID) => {
 	return participants;
 })
 
+export const getEventQuestionTypes = query(async () => {
+	const { data: questionTypes, error: queryError } = await client
+		.from("question_types")
+		.select("*");
+
+	if (queryError) error(500, `Failed to fetch question types: ${queryError.message}`);
+	return questionTypes;
+})
+
 /**
  * Remote function to create an event on the frontend.
  *
@@ -72,26 +81,31 @@ export const createEvent = form(
 			.trim()
 			.default(''),
 
-		survey: yup.array().of(
-			yup.object({
-				question: yup.string()
-					.trim().required('Survey question is required'),
+		survey: yup
+			.array()
+			.of(
+				yup.object({
+					question: yup.string()
+						.trim().required('Survey question is required'),
 
-				type: yup.string()
-					.trim().oneOf(['text', 'multiple-choice'], 'Invalid survey question type')
-					.required('Survey question type is required'),
+					type: yup
+						.string()
+						.oneOf(["text", "select", "boolean", "number", "date", "file"])
+						.required('Survey question type is required'),
 
-				options: yup.array().of(
-					yup.string()
-						.trim()
-						.required('Option text is required')
-				)
-			})
-		)
+					options: yup.array().of(
+						yup.string()
+							.trim()
+							.required('Option text is required')
+					)
+				})
+			)
+			.default([]),
 	}),
-	({ title, description, start_time, end_time, category, location, thumbnail }) => {
+	({ title, description, start_time, end_time, category, location, thumbnail, survey }) => {
 		const organiser_id = getOrganiserID();
 
+		console.group("Creating Event");
 		console.debug("Organiser ID:", organiser_id);
 		console.debug("Title:", title);
 		console.debug("Start Time:", start_time);
@@ -100,6 +114,11 @@ export const createEvent = form(
 		console.debug("Location:", location);
 		console.debug("Image File:", thumbnail?.name ?? "No image uploaded");
 		console.debug("Description:", description);
+		console.debug("Survey Questions:");
+		survey.forEach((q, i) => {
+			console.debug(`  Question ${i + 1}: ${q.question} (${q.type})`);
+		});
+		console.groupEnd();
 	}
 );
 
