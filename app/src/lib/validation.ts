@@ -1,59 +1,50 @@
 import * as yup from 'yup';
 
-export const eventID = yup.string()
-	.trim()
-	.required('Event ID is required')
-	.test('uuid-check', 'Event ID must be a valid UUID version 4', (value) => {
-		return yup.string().uuid().isValidSync(value);
-	});
+export const eventID = yup
+	.string()
+	.trim().required('Event ID is required')
+	.uuid('Event ID must be a valid UUID');
+
+/** Accommodate datetime-local HTML input format */
+export const localDateTime = yup.string()
+	.trim().required()
+	.matches(
+		/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/,
+		({ value }) => `${value} is not a valid date-time`
+	);
 
 export const participantName = yup.string()
-	.trim()
-	.required('Name is required')
-	.test('name-check', 'Name must contain only letters, spaces, and hyphens', (value) => {
-		return /^[\p{L}\s-]+$/u.test(value);
-	});
+	.trim().required('Name is required')
+	.matches(/^[\p{L}\s-]+$/u, 'Name must contain only letters, spaces, and hyphens');
 
 export const participantEmail = yup.string()
-	.trim()
-	.required('Email is required')
-	.test('email-check', 'Invalid email format', (value) => {
-		return yup.string().email().isValidSync(value);
-	});
+	.trim().required('Email is required')
+	.email();
 
-export const eventImageFile = yup.mixed()
-	.notRequired()
-	.test('is-image', 'Image file must be JPEG/PNG/GIF and under 5MB.', (value) => {
-		if (!value) return true; // Image is optional
-		if (!(value instanceof File)) return false;
-		const validTypes = ['image/jpeg', 'image/png', 'image/gif'];
-		const maxSizeInBytes = 5 * 1024 * 1024; // 5MB
-		return validTypes.includes(value.type) && value.size <= maxSizeInBytes;
-	});
-
-/**
- * Yup validation schema for event registration form.
- */
+export const thumbnail = yup.mixed<File>()
+	.default(new File([], "", { type: "image/jpeg" }))
+	.test('file', 'Image file must be a file', (value) => value instanceof File)
+	.test('size', 'File must be 5 MB or smaller', (value) =>
+		value instanceof File ? value.size <= 5 * 1024 * 1024 : true
+	)
+	.test('type', 'Only images are allowed', (value) =>
+		value instanceof File ? value.type.startsWith('image/') : true
+	);
 export const eventRegistrationSchema = yup.object({
 	eventID: eventID,
 	name: participantName,
 	email: participantEmail,
 
-	year: yup.string()
-		.trim()
-		.required('Academic year is required'),
-
-	field: yup.string()
-		.trim()
-		.required('Field of study is required'),
-
-	major: yup.string()
-		.trim()
-		.required('Major is required'),
-
-	confirm: yup.boolean()
-		.required('Confirmation is required')
-		.oneOf([true], 'Confirmation is required'),
+	// Survey Answers
+	surveyAnswers: yup
+		.array()
+		.required('Survey answers are required')
+		.of(
+			yup.object({
+				questionID: yup.string().uuid().required('Question ID is required'),
+				answer: yup.string().required('Answer is required'),
+			}).required()
+		),
 });
 
 /**
@@ -64,37 +55,40 @@ export const eventCreationSchema = yup.object({
 		.trim()
 		.required('Event title is required'),
 
-	start_time: yup.string()
-		.trim()
-		.required('Event start time is required')
-		.datetime('Start time must be of valid format'),
-
-	end_time: yup.string()
-		.trim()
-		.required('Event end time is required')
-		.datetime('End time must be of valid format')
-		.test('end-after-start', 'End time must be after start time', function (value) {
-			const { start_time } = this.parent;
-			if (!value || !start_time) return true;
-			return new Date(value) > new Date(start_time);
-		}),
+	start_time: localDateTime,
+	end_time: localDateTime,
 
 	location: yup.string()
-		.trim()
-		.required('Event location is required'),
-
-	organiser_id: yup.string()
-		.trim()
-		.uuid('Organiser ID must be a valid UUID')
-		.required('Organiser ID is required'),
+		.default('A35 Bach Dang, Tan Binh Ward, Ho Chi Minh City, Vietnam'),
 
 	category: yup.string()
 		.trim()
 		.required('Event category is required'),
 
-	imageFile: eventImageFile,
+	thumbnail: thumbnail,
 
 	description: yup.string()
 		.trim()
-		.notRequired(),
+		.default(''),
+
+	survey: yup
+		.array()
+		.of(
+			yup.object({
+				question: yup.string()
+					.trim().required('Survey question is required'),
+
+				type: yup
+					.string()
+					.oneOf(["text", "select", "boolean", "number", "date", "file"])
+					.required('Survey question type is required'),
+
+				options: yup.array().of(
+					yup.string()
+						.trim()
+						.required('Option text is required')
+				)
+			})
+		)
+		.default([])
 });
