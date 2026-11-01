@@ -1,4 +1,4 @@
-import { form, query } from "$app/server";
+import { command, form, query } from "$app/server";
 import { createSupabaseClient } from "#lib/supabase.js";
 import { eventCreationSchema, eventID, eventRegistrationSchema } from "#lib/validation.js";
 import { error, invalid, redirect } from "@sveltejs/kit";
@@ -95,4 +95,12 @@ export const registerEvent = form(eventRegistrationSchema, async ({ eventID, nam
 
 	if (surveyError) error(500, `Failed to create survey answers: ${surveyError.message}`);
 	redirect(303, `/tickets/${ticket.id}`);
+});
+
+export const deleteEvent = command(eventID, async (eventID) => {
+	const { error: deleteError } = await client.from("community_events").delete()
+		.eq("id", eventID);
+
+	if (deleteError) error(500, `Failed to delete event: ${deleteError.message}`);
+	return { success: true };
 });

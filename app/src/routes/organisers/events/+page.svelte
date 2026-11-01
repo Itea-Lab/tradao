@@ -2,7 +2,7 @@
 	import { goto, refreshAll } from "$app/navigation";
 	import { page } from "$app/state";
 	import { formatDate } from "#lib/utils.js";
-	import { getEventParticipants } from "#lib/remotes/events.remote.js";
+	import { deleteEvent, getEventParticipants } from "#lib/remotes/events.remote.js";
 	import type { PageProps } from "./$types";
 
 	import Banner from "#components/Banner.svelte";
@@ -76,9 +76,9 @@
 	</div>
 
 	<div class="s12 m1 right-align">
-		<button type="button" class="responsive large round">
+		<button type="button" class="responsive large round border">
 			<i>refresh</i>
-			Refresh
+			<span class="tooltip">Refresh</span>
 		</button>
 	</div>
 </search>
@@ -110,7 +110,8 @@
 					<td>{event.location}</td>
 					<td class="center-align">
 						<button
-							class="responsive"
+							class="responsive fill"
+							disabled={event.attendee_count === 0}
 							onclick={() => openDialogue("participants", event.id)}
 						>
 							{event.attendee_count === 0 ? "None" : event.attendee_count}
@@ -118,6 +119,7 @@
 					</td>
 					<td>
 						<div class="row middle-align" style="gap: 0">
+							<!-- Edit Event Details -->
 							<button
 								class="transparent circle"
 								type="button"
@@ -125,6 +127,8 @@
 							>
 								<i>edit</i>
 							</button>
+
+							<!-- Delete Event -->
 							<button
 								class="transparent circle"
 								type="button"
@@ -154,9 +158,9 @@
 		<header class="row">
 			<h5 class="max">Create New Event</h5>
 
-			<button class="round border" onclick={closeDialog}>
+			<button class="circle border extend" onclick={closeDialog}>
 				<i>close</i>
-				<span class="tooltip left">Close</span>
+				<span>Close</span>
 			</button>
 		</header>
 
@@ -174,9 +178,9 @@
 		<header class="row">
 			<h5 class="max">Edit Event</h5>
 
-			<button class="round border" onclick={closeDialog}>
+			<button class="circle border extend" onclick={closeDialog}>
 				<i>close</i>
-				<span class="tooltip left">Close</span>
+				<span>Close</span>
 			</button>
 		</header>
 
@@ -197,9 +201,9 @@
 		<header class="row">
 			<h5 class="max">Delete Event</h5>
 
-			<button class="round border" onclick={closeDialog}>
+			<button class="circle border extend" onclick={closeDialog}>
 				<i>close</i>
-				<span class="tooltip left">Close</span>
+				<span>Close</span>
 			</button>
 		</header>
 
@@ -208,7 +212,21 @@
 		<p>Are you sure you want to delete this event?</p>
 
 		<nav class="right-align">
-			<button type="button" class="responsive error">
+			<button
+				type="button"
+				class="responsive error"
+				onclick={async () => {
+					if (!page.state.itemID) return;
+					await deleteEvent(page.state.itemID).then((res) => {
+						if (res.success) {
+							closeDialog();
+							refreshAll();
+						} else {
+							alert("Failed to delete event.");
+						}
+					});
+				}}
+			>
 				<i>delete</i> Delete
 			</button>
 		</nav>
@@ -221,19 +239,19 @@
 		<header class="row">
 			<h5 class="max">Attendees</h5>
 
-			<button class="round border">
+			<button class="circle border extend" onclick={() => goto(`/organisers/tickets`)}>
 				<i>open_in_full</i>
-				<span class="tooltip left">View in Manage Tickets</span>
+				<span>View in Manage Tickets</span>
 			</button>
 
-			<button class="round border">
+			<button class="circle border extend">
 				<i>refresh</i>
-				<span class="tooltip left">Refresh</span>
+				<span>Refresh</span>
 			</button>
 
-			<button class="round border" onclick={closeDialog}>
+			<button class="circle border extend" onclick={closeDialog}>
 				<i>close</i>
-				<span class="tooltip left">Close</span>
+				<span>Close</span>
 			</button>
 		</header>
 
