@@ -1,13 +1,43 @@
-import { command, form, query } from "$app/server";
+import { command, form, getRequestEvent, query } from "$app/server";
 import { createSupabaseClient } from "#lib/supabase.js";
 import { eventCreationSchema, eventID, eventRegistrationSchema } from "#lib/validation.js";
 import { error, invalid, redirect } from "@sveltejs/kit";
+import { ulid } from "ulid";
 
 const client = createSupabaseClient();
 
 /**
+ * Upload the event thumbnail image to the storage bucket
+ * @param thumbnail Thumbnail image file
+ * @returns Public URL of the thumbnail image, none if empty
+ */
+async function uploadEventThumbnail(client: ReturnType<typeof createSupabaseClient>,thumbnail: File) {
+	if (thumbnail.size === 0) return "";
+
+	const ext = thumbnail.name.split(".").pop();
+	const path = `event_thumbnails/${ulid()}.${ext}`;
+
+	const { error: uploadError } = await client
+		.storage
+		.from("assets")
+		.upload(path, thumbnail, { upsert: true });
+
+	if (uploadError) {
+		error(500, `Failed to upload event thumbnail: ${uploadError.message}`);
+	}
+
+	const { data: { publicUrl } } = client
+		.storage
+		.from("assets")
+		.getPublicUrl(path);
+
+	return publicUrl;
+}
+
+/**
  * Infer the Event Organiser ID from the authenticated user.
- * TODO: Replace hardcoded value
+ *
+ * TODO: Create the `user_profiles` table linked to `event_organisers`, then infer organiser ID from the user profile.
  */
 function getOrganiserID(): string {
 	return "fd6131ea-d7e0-474b-8ec0-f982d0a69dc8"; // ITea Lab Organiser
@@ -37,7 +67,12 @@ export const getEventQuestionTypes = query(async () => {
  *
  * This function validates the input data
  */
-export const createEvent = form(eventCreationSchema, ({ title, description, start_time, end_time, category, location, thumbnail, survey }, issue) => {
+export const createEvent = form(eventCreationSchema, async ({ title, description, start_time, end_time, category, location, survey }, issue) => {
+	const { locals } = getRequestEvent();
+	const { user } = await locals.safeGetSession();
+	if (!user) return { success: false, message: 'You must log in to create an event.' };
+	const db = locals.supabase;
+
 	// Validate end_time is after start_time
 	if (new Date(end_time) <= new Date(start_time)) {
 		invalid(issue.end_time('End time must be after start time'))
@@ -45,20 +80,31 @@ export const createEvent = form(eventCreationSchema, ({ title, description, star
 
 	const organiser_id = getOrganiserID();
 
-	console.group("Creating Event");
-	console.debug("Organiser ID:", organiser_id);
-	console.debug("Title:", title);
-	console.debug("Start Time:", start_time);
-	console.debug("End Time:", end_time);
-	console.debug("Category:", category);
-	console.debug("Location:", location);
-	console.debug("Image File:", thumbnail?.name ?? "No image uploaded");
-	console.debug("Description:", description);
-	console.debug("Survey Questions:");
-	survey.forEach((q, i) => {
-		console.debug(`  Question ${i + 1}: ${q.question} (${q.type})`);
-	});
-	console.groupEnd();
+	// Upload event data
+	const { data: event, error: eventError } = await db.from("community_events").insert([{
+		title,
+		description,
+		start_time,
+		end_time,
+		category,
+		location,
+		organiser_id,
+	}]).select().single();
+
+	if (eventError) return { success: false, message: `Failed to create event: ${eventError.message}` };
+	if (!event) return { success: false, message: 'Cannot identify the created event. Please contact support.' };
+
+	// Upload survey questions
+	const { error: surveyError } = await db.from("registration_questions").insert(
+		survey.map((q) => ({
+			event_id: event.id,
+			question_type: q.type,
+			question_text: q.question,
+		}))
+	).select();
+
+	if (surveyError) return { success: false, message: `Failed to create survey questions: ${surveyError.message}` };
+	return { success: true, message: `Event created successfully: ${event.title}` };
 });
 
 /**
@@ -98,9 +144,16 @@ export const registerEvent = form(eventRegistrationSchema, async ({ eventID, nam
 });
 
 export const deleteEvent = command(eventID, async (eventID) => {
-	const { error: deleteError } = await client.from("community_events").delete()
+	console.debug(`Deleting event with ID: ${eventID}`);
+
+	const { locals } = getRequestEvent();
+	const { user } = await locals.safeGetSession();
+	if (!user) return { success: false, message: 'You must log in to delete an event.' };
+	const db = locals.supabase;
+
+	const { error: deleteError } = await db.from("community_events").delete()
 		.eq("id", eventID);
 
-	if (deleteError) error(500, `Failed to delete event: ${deleteError.message}`);
-	return { success: true };
+	if (deleteError) return { success: false, message: `Failed to delete event: ${deleteError.message}` };
+	return { success: true, message: `Event deleted successfully.` };
 });

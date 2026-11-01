@@ -2,6 +2,7 @@
 	import { goto, refreshAll } from "$app/navigation";
 	import { page } from "$app/state";
 	import { formatDate } from "#lib/utils.js";
+	import { showSnackbar } from "#lib/snackbar.js";
 	import { deleteEvent, getEventParticipants } from "#lib/remotes/events.remote.js";
 	import type { PageProps } from "./$types";
 
@@ -31,7 +32,7 @@
 	}
 
 	function openDialogue(
-		type: "create" | "edit" | "delete" | "participants",
+		type: "create" | "edit" | "delete" | "participants" | "thumbnail",
 		eventId: string | null = null,
 	) {
 		goto("", {
@@ -118,23 +119,35 @@
 						</button>
 					</td>
 					<td>
-						<div class="row middle-align" style="gap: 0">
+						<div class="row middle-align" style="gap: 0.5rem">
+							<!-- Edit Event Thumbnail -->
+							<button
+								class="chip round"
+								type="button"
+								onclick={() => openDialogue("thumbnail", event.id)}
+							>
+								<i>image</i>
+								<span class="tooltip bottom">Edit thumbnail</span>
+							</button>
+
 							<!-- Edit Event Details -->
 							<button
-								class="transparent circle"
+								class="chip round"
 								type="button"
 								onclick={() => openDialogue("edit", event.id)}
 							>
 								<i>edit</i>
+								<span class="tooltip bottom">Edit details</span>
 							</button>
 
 							<!-- Delete Event -->
 							<button
-								class="transparent circle"
+								class="chip round"
 								type="button"
 								onclick={() => openDialogue("delete", event.id)}
 							>
 								<i>delete</i>
+								<span class="tooltip bottom">Delete</span>
 							</button>
 						</div>
 					</td>
@@ -219,10 +232,11 @@
 					if (!page.state.itemID) return;
 					await deleteEvent(page.state.itemID).then((res) => {
 						if (res.success) {
+							showSnackbar("Event deleted successfully", "check");
 							closeDialog();
 							refreshAll();
 						} else {
-							alert("Failed to delete event.");
+							showSnackbar(res.message, "error");
 						}
 					});
 				}}

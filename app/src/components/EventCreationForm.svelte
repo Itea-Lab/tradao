@@ -1,20 +1,21 @@
 <script lang="ts">
 	import type { TablesUpdate } from "#lib/models.js";
-	import { issuesText, fileInfo } from "#lib/utils.js";
+	import { issuesText } from "#lib/utils.js";
 	import { createEvent, getEventQuestionTypes } from "#lib/remotes/events.remote.js";
 	import { RemoteFields } from "./remote_fields";
+	import { showSnackbar } from "#lib/snackbar.js";
 
 	// Prop for editing existing event
 	const {
 		event,
+		onSuccess,
 	}: {
 		event?: TablesUpdate<"community_events">;
 		onSuccess: () => void;
 	} = $props();
 
 	/** Store multiple survey questions */
-	let questionRows = $state([{}]);
-	let isSubmitting = $state(false);
+	let questionRows = $state([{ question: "", type: "" }]);
 
 	const {
 		title,
@@ -22,28 +23,43 @@
 		end_time,
 		location,
 		category,
-		thumbnail,
 		description: desc,
 		survey,
 	} = createEvent.fields;
 
 	/** Add a new survey question row */
 	function addQuestion() {
-		questionRows.push({});
+		questionRows.push({ question: "", type: "" });
 	}
 
 	/** Remove a survey question row */
 	function removeQuestion(index: number) {
-		if (questionRows.length > 1) {
-			questionRows.splice(index, 1);
-		} else {
-			// Remove entirely
-			questionRows = [{}];
-		}
+		questionRows.splice(index, 1);
 	}
 </script>
 
-<form {...createEvent} enctype="multipart/form-data">
+<form
+	enctype="multipart/form-data"
+	{...createEvent.enhance(async (form) => {
+		try {
+			if (await form.submit()) {
+				if (!form.result?.success) throw new Error(form.result?.message);
+				form.element.reset();
+				showSnackbar(`Successfully created event: ${form.fields.title.value()}`);
+				onSuccess();
+			} else {
+				console.group("Form submission failed");
+				form.fields.allIssues()?.forEach((issue) => {
+					console.warn(issue.message);
+				});
+				console.groupEnd();
+			}
+		} catch (e) {
+			console.error(e);
+			showSnackbar(e as string, "error");
+		}
+	})}
+>
 	<h5 class="small">1. Basic details</h5>
 
 	<div class={["field label border prefix", title.issues() && "invalid"]}>
@@ -75,22 +91,7 @@
 		{/if}
 	</div>
 
-	<h5 class="small">2. Thumbnail image</h5>
-
-	<div class="row">
-		<button type="button" class="border">
-			<i>image</i>
-			<span>Upload Thumbnail</span>
-			<input
-				id="ff-thumbnail"
-				accept="image/png,image/jpeg,image/webp"
-				{...thumbnail.as("file")}
-			/>
-		</button>
-		<p>{fileInfo("PNG/JPEG/WebP, 5MB max.", thumbnail.value())}</p>
-	</div>
-
-	<h5 class="small">3. Optional details</h5>
+	<h5 class="small">2. Optional details</h5>
 
 	<div class={["field label border prefix", location.issues() && "invalid"]}>
 		<i>location_on</i>
@@ -108,7 +109,7 @@
 			id="ff-description"
 			rows="10"
 			{...desc.as("text", event?.description ?? "")}></textarea>
-		<label for="ff-description">Event Description</label>
+		<label for="ff-description">Description</label>
 		{#if desc.issues()}
 			<output class="invalid">{issuesText(desc.issues())}</output>
 		{/if}
@@ -120,7 +121,23 @@
 		<div class="grid">
 			<div
 				class={[
-					"field label border prefix s12 m7",
+					"field label border prefix s11",
+					survey[i].type.issues() && "invalid",
+				]}
+			>
+				<i>data_object</i>
+				<select id={`survey-type-${i}`} {...survey[i].type.as("select")}>
+					<option value="">Select a question type</option>
+					{#each await getEventQuestionTypes() as type}
+						<option value={type.slug}>{type.description}</option>
+					{/each}
+				</select>
+				<label for={`survey-type-${i}`}>Question {i + 1} Type</label>
+			</div>
+
+			<div
+				class={[
+					"field label border prefix s11",
 					survey[i].question.issues() && "invalid",
 				]}
 			>
@@ -129,23 +146,7 @@
 				<label for={`survey-question-${i}`}>Question {i + 1}</label>
 			</div>
 
-			<div
-				class={[
-					"field label border prefix s12 m4",
-					survey[i].type.issues() && "invalid",
-				]}
-			>
-				<i>data_object</i>
-				<select id={`survey-type-${i}`} {...survey[i].type.as("select")}>
-					<option value="">Pick one</option>
-					{#each await getEventQuestionTypes() as type}
-						<option value={type.slug}>{type.description}</option>
-					{/each}
-				</select>
-				<label for={`survey-type-${i}`}>Type</label>
-			</div>
-
-			<button type="button" class="border s12 m1" onclick={() => removeQuestion(i)}>
+			<button type="button" class="border s1" onclick={() => removeQuestion(i)}>
 				<i>close</i>
 			</button>
 		</div>
@@ -158,7 +159,7 @@
 	</button>
 
 	<div class="medium-space"></div>
-	<button type="submit" class="responsive" disabled={isSubmitting}>
+	<button type="submit" class="responsive" disabled={!!createEvent.pending}>
 		Create Event
 	</button>
 </form>

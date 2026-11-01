@@ -30,6 +30,7 @@ export const thumbnail = yup.mixed<File>()
 	.test('type', 'Only images are allowed', (value) =>
 		value instanceof File ? value.type.startsWith('image/') : true
 	);
+
 export const eventRegistrationSchema = yup.object({
 	eventID: eventID,
 	name: participantName,
@@ -64,8 +65,6 @@ export const eventCreationSchema = yup.object({
 	category: yup.string()
 		.trim()
 		.required('Event category is required'),
-
-	thumbnail: thumbnail,
 
 	description: yup.string()
 		.trim()
