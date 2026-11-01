@@ -49,6 +49,14 @@ export const eventRegistrationSchema = yup.object({
 });
 
 /**
+ * Yup validation schema for event thumbnail upload form.
+ */
+export const eventThumbnailSchema = yup.object({
+	eventID: eventID,
+	thumbnail: thumbnail,
+});
+
+/**
  * Yup validation schema for event creation form.
  */
 export const eventCreationSchema = yup.object({

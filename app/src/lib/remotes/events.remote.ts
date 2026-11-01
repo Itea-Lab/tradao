@@ -1,43 +1,16 @@
 import { command, form, getRequestEvent, query } from "$app/server";
 import { createSupabaseClient } from "#lib/supabase.js";
-import { eventCreationSchema, eventID, eventRegistrationSchema } from "#lib/validation.js";
+import { eventCreationSchema, eventID, eventRegistrationSchema, eventThumbnailSchema } from "#lib/validation.js";
 import { error, invalid, redirect } from "@sveltejs/kit";
-import { ulid } from "ulid";
 
 const client = createSupabaseClient();
 
 /**
- * Upload the event thumbnail image to the storage bucket
- * @param thumbnail Thumbnail image file
- * @returns Public URL of the thumbnail image, none if empty
- */
-async function uploadEventThumbnail(client: ReturnType<typeof createSupabaseClient>,thumbnail: File) {
-	if (thumbnail.size === 0) return "";
-
-	const ext = thumbnail.name.split(".").pop();
-	const path = `event_thumbnails/${ulid()}.${ext}`;
-
-	const { error: uploadError } = await client
-		.storage
-		.from("assets")
-		.upload(path, thumbnail, { upsert: true });
-
-	if (uploadError) {
-		error(500, `Failed to upload event thumbnail: ${uploadError.message}`);
-	}
-
-	const { data: { publicUrl } } = client
-		.storage
-		.from("assets")
-		.getPublicUrl(path);
-
-	return publicUrl;
-}
-
-/**
  * Infer the Event Organiser ID from the authenticated user.
  *
- * TODO: Create the `user_profiles` table linked to `event_organisers`, then infer organiser ID from the user profile.
+ * TODO:
+ * Create the `user_profiles` table linked to `event_organisers`,
+ * then infer organiser ID from the user profile.
  */
 function getOrganiserID(): string {
 	return "fd6131ea-d7e0-474b-8ec0-f982d0a69dc8"; // ITea Lab Organiser
@@ -106,6 +79,41 @@ export const createEvent = form(eventCreationSchema, async ({ title, description
 	if (surveyError) return { success: false, message: `Failed to create survey questions: ${surveyError.message}` };
 	return { success: true, message: `Event created successfully: ${event.title}` };
 });
+
+/**
+ * Remote function to update an event's thumbnail on the frontend.
+ *
+ * This function validates the input data, uploads the thumbnail to storage,
+ * and updates the event with the new thumbnail URL.
+ * Successful update will return a success message.
+ */
+export const updateEventThumbnail = form(eventThumbnailSchema, async ({ eventID, thumbnail }) => {
+	const { locals } = getRequestEvent();
+	const { user } = await locals.safeGetSession();
+	if (!user) return { success: false, message: 'You must log in to update an event thumbnail.' };
+	const sb = locals.supabase;
+
+	// Skip empty thumbnail uploads (no changes)
+	if (thumbnail.size === 0) return { success: false, message: 'No changes' };
+
+	// Upload thumbnail file to storage bucket
+	const path = `event_thumbnails/${eventID}.${thumbnail.name.split(".").pop()}`;
+	const { error: uploadError } = await sb.storage.from("assets")
+		.upload(path, thumbnail, { upsert: true });
+
+	if (uploadError) return { success: false, message: `Failed to upload event thumbnail: ${uploadError.message}` };
+
+	// Get the public URL of the uploaded thumbnail
+	const { data: { publicUrl } } = sb.storage.from("assets").getPublicUrl(path);
+
+	// Update the event with the new thumbnail URL
+	const { error: updateError } = await sb.from("community_events")
+		.update({ image: publicUrl })
+		.eq("id", eventID);
+
+	if (updateError) return { success: false, message: `Failed to update event thumbnail: ${updateError.message}` };
+	return { success: true, message: `Event thumbnail updated successfully.` };
+})
 
 /**
  * Remote function to register an event on the frontend.

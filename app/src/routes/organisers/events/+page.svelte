@@ -1,9 +1,13 @@
 <script lang="ts">
 	import { goto, refreshAll } from "$app/navigation";
 	import { page } from "$app/state";
-	import { formatDate } from "#lib/utils.js";
+	import { formatDate, issuesText } from "#lib/utils.js";
 	import { showSnackbar } from "#lib/snackbar.js";
-	import { deleteEvent, getEventParticipants } from "#lib/remotes/events.remote.js";
+	import {
+		deleteEvent,
+		getEventParticipants,
+		updateEventThumbnail,
+	} from "#lib/remotes/events.remote.js";
 	import type { PageProps } from "./$types";
 
 	import Banner from "#components/Banner.svelte";
@@ -11,12 +15,14 @@
 	import EventCreationForm from "#components/EventCreationForm.svelte";
 	import PageMetadata from "#components/PageMetadata.svelte";
 
+	const { thumbnail } = updateEventThumbnail.fields;
+
 	let { data }: PageProps = $props();
+	let temporaryThumbnail: string | null = $state(null);
 	let searchQuery = $state("");
 
-	function getParticipantsCount(eventId: string) {
-		const event = data.events.find((e) => e.id === eventId);
-		return event ? event.attendee_count : 0;
+	function findEvent(eventId: string) {
+		return data.events.find((e) => e.id === eventId);
 	}
 
 	function handleKeyDown(event: KeyboardEvent) {
@@ -40,6 +46,15 @@
 			shallow: true,
 			replace: true,
 		});
+	}
+
+	const reader = new FileReader();
+	reader.onload = (e) => {
+		temporaryThumbnail = e.target?.result as string;
+	};
+
+	function renderImage() {
+		reader.readAsDataURL(thumbnail.value() as File);
 	}
 
 	function onSuccess() {
@@ -124,7 +139,11 @@
 							<button
 								class="chip round"
 								type="button"
-								onclick={() => openDialogue("thumbnail", event.id)}
+								onclick={() => {
+									// Reset temporary thumbnail when opening the dialogue
+									temporaryThumbnail = null;
+									openDialogue("thumbnail", event.id);
+								}}
 							>
 								<i>image</i>
 								<span class="tooltip bottom">Edit thumbnail</span>
@@ -200,10 +219,7 @@
 		<div class="space"></div>
 
 		<div class="scroll">
-			<EventCreationForm
-				event={data.events.find((e) => e.id === page.state.itemID)}
-				{onSuccess}
-			/>
+			<EventCreationForm event={findEvent(page.state.itemID)} {onSuccess} />
 		</div>
 	</Dialogue>
 {/if}
@@ -213,21 +229,19 @@
 	<Dialogue onClose={closeDialog}>
 		<header class="row">
 			<h5 class="max">Delete Event</h5>
-
-			<button class="circle border extend" onclick={closeDialog}>
-				<i>close</i>
-				<span>Close</span>
-			</button>
 		</header>
 
-		<div class="space"></div>
+		<p class="large-text">
+			Are you sure you want to delete the event
+			<strong>{findEvent(page.state.itemID)?.title || "Unknown Event"}</strong>?
+		</p>
 
-		<p>Are you sure you want to delete this event?</p>
+		<p class="large-text">This action cannot be undone.</p>
 
-		<nav class="right-align">
+		<nav class="grid">
 			<button
 				type="button"
-				class="responsive error"
+				class="s12 m6 error"
 				onclick={async () => {
 					if (!page.state.itemID) return;
 					await deleteEvent(page.state.itemID).then((res) => {
@@ -241,7 +255,11 @@
 					});
 				}}
 			>
-				<i>delete</i> Delete
+				<i>delete</i> Yes, Delete!
+			</button>
+
+			<button type="button" class="s12 m6 border" onclick={closeDialog}>
+				<i>close</i> No, Get Me Out Of Here!
 			</button>
 		</nav>
 	</Dialogue>
@@ -253,7 +271,10 @@
 		<header class="row">
 			<h5 class="max">Attendees</h5>
 
-			<button class="circle border extend" onclick={() => goto(`/organisers/tickets`)}>
+			<button
+				class="circle border extend"
+				onclick={() => goto(`/organisers/tickets`)}
+			>
 				<i>open_in_full</i>
 				<span>View in Manage Tickets</span>
 			</button>
@@ -270,7 +291,7 @@
 		</header>
 
 		<div class="medium-height scroll surface-container-high">
-			{#if getParticipantsCount(page.state.itemID) === 0}
+			{#if findEvent(page.state.itemID)?.attendee_count === 0}
 				<p class="center-align">No participants found.</p>
 			{:else}
 				<table class="stripes">
@@ -298,13 +319,86 @@
 						<tr>
 							<td colspan="2" class="right-align">
 								<small>
-									{getParticipantsCount(page.state.itemID)} participants
+									{findEvent(page.state.itemID)?.attendee_count || NaN} participants
 								</small>
 							</td>
 						</tr>
 					</tfoot>
 				</table>
 			{/if}
+		</div>
+	</Dialogue>
+{/if}
+
+<!-- MARK: Dialogue -->
+{#if page.state.dialog === "thumbnail" && page.state.itemID}
+	<Dialogue onClose={closeDialog}>
+		<header class="row">
+			<h5 class="max">Edit Event Thumbnail</h5>
+
+			<button class="circle border extend" onclick={closeDialog}>
+				<i>close</i>
+				<span>Close</span>
+			</button>
+		</header>
+
+		<div class="scroll medium-height">
+			<form enctype="multipart/form-data" {...updateEventThumbnail}>
+				<input
+					{...updateEventThumbnail.fields.eventID.as("text", page.state.itemID)}
+					disabled
+					hidden
+				/>
+
+				<div class={["field label prefix border"]}>
+					<i>attach_file</i>
+					<input type="text" />
+					<input
+						{...updateEventThumbnail.fields.thumbnail.as("file")}
+						id="thumbnail"
+						accept="image/*"
+						onchange={renderImage}
+					/>
+					<label for="thumbnail">
+						Upload new image (max. 5MB, JPG/PNG/WEBP)
+					</label>
+					{#if updateEventThumbnail.fields.thumbnail.issues()}
+						<output class="invalid">
+							{issuesText(updateEventThumbnail.fields.thumbnail.issues())}
+						</output>
+					{/if}
+				</div>
+			</form>
+
+			<div class="grid">
+				<div class="s12 m6">
+					<h6>Current</h6>
+
+					<div class="space"></div>
+
+					<img
+						class="responsive"
+						src={findEvent(page.state.itemID)?.image || ""}
+						alt={`Thumbnail for ${findEvent(page.state.itemID)?.title || "Unknown Event"}`}
+					/>
+				</div>
+
+				<div class="s12 m6">
+					<h6>New</h6>
+
+					<div class="space"></div>
+
+					<img
+						class="responsive"
+						src={temporaryThumbnail
+							? temporaryThumbnail
+							: findEvent(page.state.itemID)?.image || ""}
+						alt={temporaryThumbnail
+							? "New Thumbnail Preview"
+							: "No New Thumbnail Selected"}
+					/>
+				</div>
+			</div>
 		</div>
 	</Dialogue>
 {/if}
