@@ -3,22 +3,16 @@
 	import { page } from "$app/state";
 	import { formatDate, issuesText } from "#lib/utils.js";
 	import { showSnackbar } from "#lib/snackbar.js";
-	import {
-		deleteEvent,
-		getEventParticipants,
-		updateEventThumbnail,
-	} from "#lib/remotes/events.remote.js";
+	import { deleteEvent, getEventParticipants } from "#lib/remotes/events.remote.js";
 	import type { PageProps } from "./$types";
 
 	import Banner from "#components/Banner.svelte";
 	import Dialogue from "#components/Dialogue.svelte";
 	import EventCreationForm from "#components/EventCreationForm.svelte";
 	import PageMetadata from "#components/PageMetadata.svelte";
-
-	const { thumbnail } = updateEventThumbnail.fields;
+	import EventThumbnailForm from "#components/EventThumbnailForm.svelte";
 
 	let { data }: PageProps = $props();
-	let temporaryThumbnail: string | null = $state(null);
 	let searchQuery = $state("");
 
 	function findEvent(eventId: string) {
@@ -46,15 +40,6 @@
 			shallow: true,
 			replace: true,
 		});
-	}
-
-	const reader = new FileReader();
-	reader.onload = (e) => {
-		temporaryThumbnail = e.target?.result as string;
-	};
-
-	function renderImage() {
-		reader.readAsDataURL(thumbnail.value() as File);
 	}
 
 	function onSuccess() {
@@ -126,50 +111,14 @@
 					<td>{event.location}</td>
 					<td class="center-align">
 						<button
-							class="responsive fill"
+							class="responsive chip"
 							disabled={event.attendee_count === 0}
 							onclick={() => openDialogue("participants", event.id)}
 						>
 							{event.attendee_count === 0 ? "None" : event.attendee_count}
 						</button>
 					</td>
-					<td>
-						<div class="row middle-align" style="gap: 0.5rem">
-							<!-- Edit Event Thumbnail -->
-							<button
-								class="chip round"
-								type="button"
-								onclick={() => {
-									// Reset temporary thumbnail when opening the dialogue
-									temporaryThumbnail = null;
-									openDialogue("thumbnail", event.id);
-								}}
-							>
-								<i>image</i>
-								<span class="tooltip bottom">Edit thumbnail</span>
-							</button>
-
-							<!-- Edit Event Details -->
-							<button
-								class="chip round"
-								type="button"
-								onclick={() => openDialogue("edit", event.id)}
-							>
-								<i>edit</i>
-								<span class="tooltip bottom">Edit details</span>
-							</button>
-
-							<!-- Delete Event -->
-							<button
-								class="chip round"
-								type="button"
-								onclick={() => openDialogue("delete", event.id)}
-							>
-								<i>delete</i>
-								<span class="tooltip bottom">Delete</span>
-							</button>
-						</div>
-					</td>
+					<td>{@render EventMenu(event.id)}</td>
 				</tr>
 			{/each}
 		</tbody>
@@ -183,6 +132,32 @@
 		</tfoot>
 	</table>
 </div>
+
+<!-- MARK: Menu -->
+{#snippet EventMenu(id: string)}
+	<div>
+		<button class="transparent circle" type="button">
+			<i>more_vert</i>
+		</button>
+
+		<menu class="group left no-wrap">
+			{#each [{ id: "thumbnail", label: "Edit thumbnail", icon: "image" }, { id: "edit", label: "Edit details", icon: "edit" }, { id: "delete", label: "Delete", icon: "delete" }] as item}
+				<li class="no-padding">
+					<button
+						class="transparent no-round responsive left-align"
+						type="button"
+						onclick={() => {
+							openDialogue(item.id as "thumbnail" | "edit" | "delete", id);
+						}}
+					>
+						<i>{item.icon}</i>
+						{item.label}
+					</button>
+				</li>
+			{/each}
+		</menu>
+	</div>
+{/snippet}
 
 <!-- MARK: Dialogue -->
 {#if page.state.dialog === "create"}
@@ -267,6 +242,8 @@
 
 <!-- MARK: Dialogue -->
 {#if page.state.dialog === "participants" && page.state.itemID}
+	{@const query = getEventParticipants(page.state.itemID)}
+
 	<Dialogue onClose={closeDialog}>
 		<header class="row">
 			<h5 class="max">Attendees</h5>
@@ -279,7 +256,7 @@
 				<span>View in Manage Tickets</span>
 			</button>
 
-			<button class="circle border extend">
+			<button class="circle border extend" onclick={() => query.refresh()}>
 				<i>refresh</i>
 				<span>Refresh</span>
 			</button>
@@ -303,7 +280,7 @@
 					</thead>
 
 					<tbody>
-						{#each await getEventParticipants(page.state.itemID) as participant}
+						{#each await query as participant}
 							<tr>
 								<td>{participant.name}</td>
 								<td>
@@ -342,63 +319,10 @@
 			</button>
 		</header>
 
-		<div class="scroll medium-height">
-			<form enctype="multipart/form-data" {...updateEventThumbnail}>
-				<input
-					{...updateEventThumbnail.fields.eventID.as("text", page.state.itemID)}
-					disabled
-					hidden
-				/>
+		<div class="scroll large-height">
+			<div class="tiny-space"></div>
 
-				<div class={["field label prefix border"]}>
-					<i>attach_file</i>
-					<input type="text" />
-					<input
-						{...updateEventThumbnail.fields.thumbnail.as("file")}
-						id="thumbnail"
-						accept="image/*"
-						onchange={renderImage}
-					/>
-					<label for="thumbnail">
-						Upload new image (max. 5MB, JPG/PNG/WEBP)
-					</label>
-					{#if updateEventThumbnail.fields.thumbnail.issues()}
-						<output class="invalid">
-							{issuesText(updateEventThumbnail.fields.thumbnail.issues())}
-						</output>
-					{/if}
-				</div>
-			</form>
-
-			<div class="grid">
-				<div class="s12 m6">
-					<h6>Current</h6>
-
-					<div class="space"></div>
-
-					<img
-						class="responsive"
-						src={findEvent(page.state.itemID)?.image || ""}
-						alt={`Thumbnail for ${findEvent(page.state.itemID)?.title || "Unknown Event"}`}
-					/>
-				</div>
-
-				<div class="s12 m6">
-					<h6>New</h6>
-
-					<div class="space"></div>
-
-					<img
-						class="responsive"
-						src={temporaryThumbnail
-							? temporaryThumbnail
-							: findEvent(page.state.itemID)?.image || ""}
-						alt={temporaryThumbnail
-							? "New Thumbnail Preview"
-							: "No New Thumbnail Selected"}
-					/>
-				</div>
-			</div>
+			<EventThumbnailForm event={findEvent(page.state.itemID)!!} />
 		</div>
 	</Dialogue>
 {/if}
