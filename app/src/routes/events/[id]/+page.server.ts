@@ -19,22 +19,18 @@ export const load: PageServerLoad = async (
 		? await query.eq("id", identifier).single()
 		: await query.eq("slug", identifier).single();
 
-	const { data: academicStatus, error: statusError } = await supabase
-		.from("academic_status")
-		.select("*");
-
-	const { data: fieldsOfStudy, error: fieldsError } = await supabase
-		.from("fields_of_study")
-		.select("*");
-
 	if (eventError) throw eventError;
-	if (statusError) throw statusError;
-	if (fieldsError) throw fieldsError;
-
 	if (!event) throw error(404, "Event not found");
+
+	const { data: survey, error: questionsError } = await supabase
+		.from("registration_questions")
+		.select("*")
+		.eq("event_id", event.id);
+
+	if (questionsError) throw questionsError;
 
 	// Optional: canonicalize URLs — if user requested by UUID, redirect to slug URL
 	// if (isUuid && event.slug) throw redirect(301, `/events/${event.slug}`);
 
-	return { event: event, academicStatus, fieldsOfStudy };
+	return { event: event, survey: survey ?? [] };
 };

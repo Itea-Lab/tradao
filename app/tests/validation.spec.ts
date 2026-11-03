@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { eventID, participantName, participantEmail, eventImageFile, eventCreationSchema } from "#lib/validation.js";
+import { eventID, participantName, participantEmail, thumbnail, eventCreationSchema } from "#lib/validation.js";
 import type { Tables } from '#lib/models.js';
 
 describe('event registration schema test', () => {
@@ -118,16 +118,16 @@ describe('event creation schema test', () => {
 
 	it('accepts image file with valid type and size', () => {
 		const validImageFile = new File(['dummy content'], 'event-image.jpg', { type: 'image/jpeg' });
-		expect(eventImageFile.isValidSync(validImageFile)).toBe(true);
+		expect(thumbnail.isValidSync(validImageFile)).toBe(true);
 	});
 
 	it('rejects image file with invalid type or size', () => {
 		const invalidImageFile = new File(['dummy content'], 'event-image.txt', { type: 'text/plain' });
-		expect(eventImageFile.isValidSync(invalidImageFile)).toBe(false);
+		expect(thumbnail.isValidSync(invalidImageFile)).toBe(false);
 	});
 
 	it('reject image file that is not a File at all', () => {
 		const notAFile = { name: 'not-a-file.jpg', type: 'image/jpeg', size: 1024 };
-		expect(eventImageFile.isValidSync(notAFile)).toBe(false);
+		expect(thumbnail.isValidSync(notAFile)).toBe(false);
 	});
 });

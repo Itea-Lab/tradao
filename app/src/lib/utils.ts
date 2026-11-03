@@ -1,3 +1,5 @@
+import type { RemoteFormIssue } from "$app/server";
+
 /**
  * Utility function to create an error response for HTTP requests.
  * @param message Error message
@@ -80,4 +82,16 @@ export function search<T>(array: T[], query: string, keys: (keyof T)[]): T[] {
  */
 export function isEventUpcoming(eventDate: string | Date): boolean {
 	return new Date(eventDate) > new Date();
+}
+
+/** Format form issues into a string for display */
+export function issuesText(issues?: RemoteFormIssue[]) {
+	if (!issues) return "";
+	return issues.map((issue) => issue.message).join(", ");
+}
+
+/** Format file information into a string for display */
+export function fileInfo(defaultText: string, file?: File) {
+	if (!file) return defaultText;
+	return `${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
 }

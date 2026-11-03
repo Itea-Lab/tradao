@@ -1,16 +1,23 @@
 <script lang="ts">
 	import { goto, refreshAll } from "$app/navigation";
 	import { page } from "$app/state";
-	import { formatDate } from "#lib/utils.js";
+	import { formatDate, issuesText } from "#lib/utils.js";
+	import { showSnackbar } from "#lib/snackbar.js";
+	import { deleteEvent, getEventParticipants } from "#lib/remotes/events.remote.js";
 	import type { PageProps } from "./$types";
 
 	import Banner from "#components/Banner.svelte";
 	import Dialogue from "#components/Dialogue.svelte";
 	import EventCreationForm from "#components/EventCreationForm.svelte";
 	import PageMetadata from "#components/PageMetadata.svelte";
+	import EventThumbnailForm from "#components/EventThumbnailForm.svelte";
 
 	let { data }: PageProps = $props();
 	let searchQuery = $state("");
+
+	function findEvent(eventId: string) {
+		return data.events.find((e) => e.id === eventId);
+	}
 
 	function handleKeyDown(event: KeyboardEvent) {
 		if (event.key === "Escape") closeDialog();
@@ -25,7 +32,7 @@
 	}
 
 	function openDialogue(
-		type: "create" | "edit" | "delete",
+		type: "create" | "edit" | "delete" | "participants" | "thumbnail",
 		eventId: string | null = null,
 	) {
 		goto("", {
@@ -57,7 +64,8 @@
 			bind:value={searchQuery}
 		/>
 	</div>
-	<div class="s12 m4 right-align">
+
+	<div class="s12 m3 right-align">
 		<button
 			type="button"
 			class="responsive large round"
@@ -65,6 +73,13 @@
 		>
 			<i>add</i>
 			Create New Event
+		</button>
+	</div>
+
+	<div class="s12 m1 right-align">
+		<button type="button" class="responsive large round border">
+			<i>refresh</i>
+			<span class="tooltip">Refresh</span>
 		</button>
 	</div>
 </search>
@@ -94,29 +109,16 @@
 					<td>{formatDate(event.start_time)}</td>
 					<td>{formatDate(event.end_time)}</td>
 					<td>{event.location}</td>
-					<td class="right-align"
-						>{event.attendee_count === 0
-							? "None"
-							: `${event.attendee_count} people`}</td
-					>
-					<td>
-						<div class="row middle-align" style="gap: 0">
-							<button
-								class="transparent circle"
-								type="button"
-								onclick={() => openDialogue("edit", event.id)}
-							>
-								<i>edit</i>
-							</button>
-							<button
-								class="transparent circle"
-								type="button"
-								onclick={() => openDialogue("delete", event.id)}
-							>
-								<i>delete</i>
-							</button>
-						</div>
+					<td class="center-align">
+						<button
+							class="responsive chip"
+							disabled={event.attendee_count === 0}
+							onclick={() => openDialogue("participants", event.id)}
+						>
+							{event.attendee_count === 0 ? "None" : event.attendee_count}
+						</button>
 					</td>
+					<td>{@render EventMenu(event.id)}</td>
 				</tr>
 			{/each}
 		</tbody>
@@ -131,13 +133,41 @@
 	</table>
 </div>
 
+<!-- MARK: Menu -->
+{#snippet EventMenu(id: string)}
+	<div>
+		<button class="transparent circle" type="button">
+			<i>more_vert</i>
+		</button>
+
+		<menu class="group left no-wrap">
+			{#each [{ id: "thumbnail", label: "Edit thumbnail", icon: "image" }, { id: "edit", label: "Edit details", icon: "edit" }, { id: "delete", label: "Delete", icon: "delete" }] as item}
+				<li class="no-padding">
+					<button
+						class="transparent no-round responsive left-align"
+						type="button"
+						onclick={() => {
+							openDialogue(item.id as "thumbnail" | "edit" | "delete", id);
+						}}
+					>
+						<i>{item.icon}</i>
+						{item.label}
+					</button>
+				</li>
+			{/each}
+		</menu>
+	</div>
+{/snippet}
+
 <!-- MARK: Dialogue -->
 {#if page.state.dialog === "create"}
 	<Dialogue onClose={closeDialog}>
 		<header class="row">
 			<h5 class="max">Create New Event</h5>
-			<button type="button" class="transparent circle" onclick={closeDialog}>
+
+			<button class="circle border extend" onclick={closeDialog}>
 				<i>close</i>
+				<span>Close</span>
 			</button>
 		</header>
 
@@ -154,18 +184,17 @@
 	<Dialogue onClose={closeDialog}>
 		<header class="row">
 			<h5 class="max">Edit Event</h5>
-			<button type="button" class="transparent circle" onclick={closeDialog}>
+
+			<button class="circle border extend" onclick={closeDialog}>
 				<i>close</i>
+				<span>Close</span>
 			</button>
 		</header>
 
 		<div class="space"></div>
 
 		<div class="scroll">
-			<EventCreationForm
-				event={data.events.find((e) => e.id === page.state.itemID)}
-				{onSuccess}
-			/>
+			<EventCreationForm event={findEvent(page.state.itemID)} {onSuccess} />
 		</div>
 	</Dialogue>
 {/if}
@@ -175,20 +204,126 @@
 	<Dialogue onClose={closeDialog}>
 		<header class="row">
 			<h5 class="max">Delete Event</h5>
-			<button type="button" class="transparent circle" onclick={closeDialog}>
+		</header>
+
+		<p class="large-text">
+			Are you sure you want to delete the event
+			<strong>{findEvent(page.state.itemID)?.title || "Unknown Event"}</strong>?
+		</p>
+
+		<p class="large-text">This action cannot be undone.</p>
+
+		<nav class="grid">
+			<button
+				type="button"
+				class="s12 m6 error"
+				onclick={async () => {
+					if (!page.state.itemID) return;
+					await deleteEvent(page.state.itemID).then((res) => {
+						if (res.success) {
+							showSnackbar("Event deleted successfully", "check");
+							closeDialog();
+							refreshAll();
+						} else {
+							showSnackbar(res.message, "error");
+						}
+					});
+				}}
+			>
+				<i>delete</i> Yes, Delete!
+			</button>
+
+			<button type="button" class="s12 m6 border" onclick={closeDialog}>
+				<i>close</i> No, Get Me Out Of Here!
+			</button>
+		</nav>
+	</Dialogue>
+{/if}
+
+<!-- MARK: Dialogue -->
+{#if page.state.dialog === "participants" && page.state.itemID}
+	{@const query = getEventParticipants(page.state.itemID)}
+
+	<Dialogue onClose={closeDialog}>
+		<header class="row">
+			<h5 class="max">Attendees</h5>
+
+			<button
+				class="circle border extend"
+				onclick={() => goto(`/organisers/tickets`)}
+			>
+				<i>open_in_full</i>
+				<span>View in Manage Tickets</span>
+			</button>
+
+			<button class="circle border extend" onclick={() => query.refresh()}>
+				<i>refresh</i>
+				<span>Refresh</span>
+			</button>
+
+			<button class="circle border extend" onclick={closeDialog}>
 				<i>close</i>
+				<span>Close</span>
 			</button>
 		</header>
 
-		<div class="space"></div>
+		<div class="medium-height scroll surface-container-high">
+			{#if findEvent(page.state.itemID)?.attendee_count === 0}
+				<p class="center-align">No participants found.</p>
+			{:else}
+				<table class="stripes">
+					<thead class="fixed">
+						<tr>
+							<th>Name</th>
+							<th>Email</th>
+						</tr>
+					</thead>
 
-		<p>Are you sure you want to delete this event?</p>
+					<tbody>
+						{#each await query as participant}
+							<tr>
+								<td>{participant.name}</td>
+								<td>
+									<a href="mailto:{participant.email}">
+										{participant.email}
+									</a>
+								</td>
+							</tr>
+						{/each}
+					</tbody>
 
-		<nav class="right-align">
-			<button type="button" class="responsive error">
-				<i>delete</i> Delete
+					<tfoot class="fixed">
+						<tr>
+							<td colspan="2" class="right-align">
+								<small>
+									{findEvent(page.state.itemID)?.attendee_count || NaN} participants
+								</small>
+							</td>
+						</tr>
+					</tfoot>
+				</table>
+			{/if}
+		</div>
+	</Dialogue>
+{/if}
+
+<!-- MARK: Dialogue -->
+{#if page.state.dialog === "thumbnail" && page.state.itemID}
+	<Dialogue onClose={closeDialog}>
+		<header class="row">
+			<h5 class="max">Edit Event Thumbnail</h5>
+
+			<button class="circle border extend" onclick={closeDialog}>
+				<i>close</i>
+				<span>Close</span>
 			</button>
-		</nav>
+		</header>
+
+		<div class="scroll large-height">
+			<div class="tiny-space"></div>
+
+			<EventThumbnailForm event={findEvent(page.state.itemID)!!} />
+		</div>
 	</Dialogue>
 {/if}
 

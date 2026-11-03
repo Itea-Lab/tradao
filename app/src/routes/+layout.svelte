@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Navigation from '#components/Navigation.svelte';
 	import Footer from '#components/Footer.svelte';
+	import Snackbar from '#components/Snackbar.svelte';
 	import type { LayoutData } from './$types';
 
 	let { children }: { data: LayoutData; children: any } = $props();
@@ -46,3 +47,5 @@
 </main>
 
 <Footer {community} {contact} />
+
+<Snackbar />
