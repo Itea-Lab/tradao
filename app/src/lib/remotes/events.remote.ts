@@ -152,8 +152,6 @@ export const registerEvent = form(eventRegistrationSchema, async ({ eventID, nam
 });
 
 export const deleteEvent = command(eventID, async (eventID) => {
-	console.debug(`Deleting event with ID: ${eventID}`);
-
 	const { locals } = getRequestEvent();
 	const { user } = await locals.safeGetSession();
 	if (!user) return { success: false, message: 'You must log in to delete an event.' };
