@@ -1,4 +1,8 @@
 <script lang="ts">
+	import { goto } from "$app/navigation";
+	import { logout } from "#lib/remotes/auth.remote.js";
+	import { showSnackbar } from "#lib/snackbar.js";
+
 	import PageMetadata from "#components/PageMetadata.svelte";
 	import Banner from "#components/Banner.svelte";
 	import type { PageData } from "./$types";
@@ -7,15 +11,14 @@
 	let username = $derived(data.user?.email ?? "User");
 
 	async function handleLogout() {
-		const response = await fetch("/api/logout", {
-			method: "GET",
-			headers: { "Content-Type": "application/json" },
-		});
-
-		if (response.ok) {
-			window.location.href = "/login";
-		} else {
-			console.error("Logout failed");
+		try {
+			await logout().then(({ redirectTo }) => {
+				showSnackbar("Successfully logged out.");
+				goto(redirectTo ?? "/");
+			});
+		} catch (error) {
+			console.error("Logout failed:", error);
+			showSnackbar("Logout failed. Please try again.", "error");
 		}
 	}
 </script>

@@ -31,6 +31,16 @@ export const thumbnail = yup.mixed<File>()
 		value instanceof File ? value.type.startsWith('image/') : true
 	);
 
+export const loginSchema = yup.object({
+	email: yup.string()
+		.email("Email must be a valid email address")
+		.trim().required('Email is required'),
+
+	_password: yup.string()
+		.min(6, "Password must be at least 6 characters")
+		.trim().required('Password is required'),
+});
+
 export const eventRegistrationSchema = yup.object({
 	eventID: eventID,
 	name: participantName,
@@ -78,24 +88,20 @@ export const eventCreationSchema = yup.object({
 		.trim()
 		.default(''),
 
-	survey: yup
-		.array()
-		.of(
-			yup.object({
-				question: yup.string()
-					.trim().required('Survey question is required'),
+	survey: yup.array().of(
+		yup.object({
+			question: yup.string()
+				.trim().required('Survey question is required'),
 
-				type: yup
-					.string()
-					.oneOf(["text", "select", "boolean", "number", "date", "file"])
-					.required('Survey question type is required'),
+			type: yup
+				.string()
+				.oneOf(["text", "select", "boolean", "number", "date", "file"])
+				.required('Survey question type is required'),
 
-				options: yup.array().of(
-					yup.string()
-						.trim()
-						.required('Option text is required')
-				)
-			})
-		)
-		.default([])
+			options: yup.array().of(
+				yup.string()
+					.trim().required('Option text is required')
+			)
+		})
+	).default([])
 });

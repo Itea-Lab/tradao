@@ -1,9 +1,6 @@
 import { command, form, getRequestEvent, query } from "$app/server";
-import { createSupabaseClient } from "#lib/supabase.js";
 import { eventCreationSchema, eventID, eventRegistrationSchema, eventThumbnailSchema } from "#lib/validation.js";
 import { error, invalid, redirect } from "@sveltejs/kit";
-
-const client = createSupabaseClient();
 
 /**
  * Infer the Event Organiser ID from the authenticated user.
@@ -17,7 +14,8 @@ function getOrganiserID(): string {
 }
 
 export const getEventParticipants = query(eventID, async (eventID) => {
-	const { data: participants, error: queryError } = await client
+	const sb = getRequestEvent().locals.supabase;
+	const { data: participants, error: queryError } = await sb
 		.from("event_tickets")
 		.select("*")
 		.eq("event_id", eventID);
@@ -27,7 +25,8 @@ export const getEventParticipants = query(eventID, async (eventID) => {
 })
 
 export const getEventQuestionTypes = query(async () => {
-	const { data: questionTypes, error: queryError } = await client
+	const sb = getRequestEvent().locals.supabase;
+	const { data: questionTypes, error: queryError } = await sb
 		.from("question_types")
 		.select("*");
 
@@ -41,10 +40,10 @@ export const getEventQuestionTypes = query(async () => {
  * This function validates the input data
  */
 export const createEvent = form(eventCreationSchema, async ({ title, description, start_time, end_time, category, location, survey }, issue) => {
-	const { locals } = getRequestEvent();
-	const { user } = await locals.safeGetSession();
-	if (!user) return { success: false, message: 'You must log in to create an event.' };
-	const db = locals.supabase;
+	const sb = getRequestEvent().locals.supabase;
+
+	const { data: { user }, error: userError } = await sb.auth.getUser();
+	if (!user || userError) return { success: false, message: 'You must log in to create an event.' };
 
 	// Validate end_time is after start_time
 	if (new Date(end_time) <= new Date(start_time)) {
@@ -54,7 +53,7 @@ export const createEvent = form(eventCreationSchema, async ({ title, description
 	const organiser_id = getOrganiserID();
 
 	// Upload event data
-	const { data: event, error: eventError } = await db.from("community_events").insert([{
+	const { data: event, error: eventError } = await sb.from("community_events").insert([{
 		title,
 		description,
 		start_time,
@@ -68,7 +67,7 @@ export const createEvent = form(eventCreationSchema, async ({ title, description
 	if (!event) return { success: false, message: 'Cannot identify the created event. Please contact support.' };
 
 	// Upload survey questions
-	const { error: surveyError } = await db.from("registration_questions").insert(
+	const { error: surveyError } = await sb.from("registration_questions").insert(
 		survey.map((q) => ({
 			event_id: event.id,
 			question_type: q.type,
@@ -88,10 +87,10 @@ export const createEvent = form(eventCreationSchema, async ({ title, description
  * Successful update will return a success message.
  */
 export const updateEventThumbnail = form(eventThumbnailSchema, async ({ eventID, thumbnail }) => {
-	const { locals } = getRequestEvent();
-	const { user } = await locals.safeGetSession();
-	if (!user) return { success: false, message: 'You must log in to update an event thumbnail.' };
-	const sb = locals.supabase;
+	const sb = getRequestEvent().locals.supabase;
+
+	const { data: { user }, error: userError } = await sb.auth.getUser();
+	if (!user || userError) return { success: false, message: 'You must log in to update an event thumbnail.' };
 
 	// Skip empty thumbnail uploads (no changes)
 	if (thumbnail.size === 0) return { success: false, message: 'No changes' };
@@ -123,8 +122,11 @@ export const updateEventThumbnail = form(eventThumbnailSchema, async ({ eventID,
  * Successful registration will redirect the user to the ticket page.
  */
 export const registerEvent = form(eventRegistrationSchema, async ({ eventID, name, email, surveyAnswers }) => {
+	// All users can register events i.e. anon
+	const sb = getRequestEvent().locals.supabase;
+
 	// Upload the base ticket
-	const { data: ticket, error: ticketError } = await client.from("event_tickets").insert([{
+	const { data: ticket, error: ticketError } = await sb.from("event_tickets").insert([{
 		event_id: eventID,
 		name,
 		email,
@@ -139,7 +141,7 @@ export const registerEvent = form(eventRegistrationSchema, async ({ eventID, nam
 	if (!ticket) error(500, 'Cannot identify the created ticket. Please contact support.');
 
 	// Upload the survey answers
-	const { error: surveyError } = await client.from("registration_answers").insert(
+	const { error: surveyError } = await sb.from("registration_answers").insert(
 		surveyAnswers.map((answer) => ({
 			ticket_id: ticket.id,
 			question_id: answer.questionID,
@@ -152,12 +154,12 @@ export const registerEvent = form(eventRegistrationSchema, async ({ eventID, nam
 });
 
 export const deleteEvent = command(eventID, async (eventID) => {
-	const { locals } = getRequestEvent();
-	const { user } = await locals.safeGetSession();
-	if (!user) return { success: false, message: 'You must log in to delete an event.' };
-	const db = locals.supabase;
+	const sb = getRequestEvent().locals.supabase;
 
-	const { error: deleteError } = await db.from("community_events").delete()
+	const { data: { user }, error: userError } = await sb.auth.getUser();
+	if (!user || userError) return { success: false, message: 'You must log in to delete an event.' };
+
+	const { error: deleteError } = await sb.from("community_events").delete()
 		.eq("id", eventID);
 
 	if (deleteError) return { success: false, message: `Failed to delete event: ${deleteError.message}` };
