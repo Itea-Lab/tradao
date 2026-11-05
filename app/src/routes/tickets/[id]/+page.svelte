@@ -2,17 +2,18 @@
 	import { onMount } from "svelte";
 	import PageMetadata from "#components/PageMetadata.svelte";
 	import Banner from "#components/Banner.svelte";
+	import { getDetailedTicket } from "#lib/remotes/tickets.remote.js";
 	import { formatDate } from "#lib/utils.js";
 	import type { PageProps } from "./$types";
 
-	let { data }: PageProps = $props();
-	const ticket = $derived(data.ticket);
-	// const saveURL = $derived(data.saveURL);
+	let { params }: PageProps = $props();
+	const ticket = $derived(await getDetailedTicket(params.id));
+
 	const eventDates = $derived({
-		start_date: ticket.event_start_time?.split("T")[0],
-		end_date: ticket.event_end_time?.split("T")[0],
-		start_time: ticket.event_start_time?.split("T")[1]?.substring(0, 5),
-		end_time: ticket.event_end_time?.split("T")[1]?.substring(0, 5),
+		start_date: ticket.event.start_time?.split("T")[0],
+		end_date: ticket.event.end_time?.split("T")[0],
+		start_time: ticket.event.start_time?.split("T")[1]?.substring(0, 5),
+		end_time: ticket.event.end_time?.split("T")[1]?.substring(0, 5),
 	});
 
 	onMount(() => {
@@ -37,7 +38,7 @@
 </article>
 
 {#snippet TicketHeader()}
-	<h2 class="small">{ticket.event_title}</h2>
+	<h2 class="small">{ticket.event.title}</h2>
 {/snippet}
 
 {#snippet TicketDetails()}
@@ -84,21 +85,21 @@
 				/>
 			</a> -->
 			<add-to-calendar-button
-				name={ticket.event_title}
+				name={ticket.event.title}
 				options="'Apple','Google','iCal','Outlook.com','Yahoo'"
-				location={ticket.event_location}
+				location={ticket.event.location}
 				startDate={eventDates.start_date}
 				endDate={eventDates.end_date}
 				startTime={eventDates.start_time}
 				endTime={eventDates.end_time}
-				timeZone="currentBrowser"
-				organizer={`${ticket.organiser_name}|contact.itealab@gmail.com`}
+				timeZone="ICT"
+				organizer={`${ticket.event.organiser.name}|contact.itealab@gmail.com`}
 				attendee={`${ticket.name}|${ticket.email}`}
 				listStyle="overlay"
 				lightMode="system"
 			></add-to-calendar-button>
 		</div>
-		<p>{ticket.ticket_id}</p>
+		<p>{ticket.id}</p>
 		<p class="small">
 			Note: Add to Google Wallet button is only available for testers.
 		</p>

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { registerEvent } from "#lib/remotes/events.remote.js";
+	import { registerEvent } from "#lib/remotes/tickets.remote.js";
 	import { type Tables } from "#lib/models.js";
 	import { RemoteFields } from "./remote_fields";
 

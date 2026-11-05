@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { onMount, onDestroy } from "svelte";
 	import jsQR from "jsqr";
-	import * as yup from "yup";
+	import { getTicket } from "#lib/remotes/tickets.remote.js";
 	import type { Tables } from "#lib/models.js";
 
 	let isLoading = $state(false);
 	let error = $state<string | null>(null);
 	let ticket = $state<Tables<"event_tickets"> | null>(null);
-	let qrResult = $state<string | null>(null);
+	const tickets = $state<Tables<"event_tickets">[]>([]);
 
 	let debounceTimeout: ReturnType<typeof setTimeout> | null = null;
 	let lastScannedCode: string | null = null;
@@ -17,87 +17,55 @@
 	let animationId: number;
 
 	async function startCamera() {
-		try {
-			const stream = await navigator.mediaDevices.getUserMedia({
-				video: { facingMode: "environment" },
-			});
-			if (videoRef) videoRef.srcObject = stream;
-		} catch {
-			error = "Camera access denied or not available.";
-		}
+		await navigator.mediaDevices
+			.getUserMedia({ video: { facingMode: "environment" } })
+			.then((stream) => {
+				if (videoRef) videoRef.srcObject = stream;
+			})
+			.catch(() => (error = "Camera access denied or not available."));
 	}
 
 	function handleQRResult(data: string) {
 		error = null;
 		ticket = null;
-		qrResult = data;
 
 		// Ignore empty strings (no QR code detected)
 		if (!data || data.trim() === "") return;
 
-		// Validate UUID
-		if (!yup.string().uuid().isValidSync(data)) {
-			error = `Invalid ticket QR code: '${data}'.`;
-			return;
-		}
-
 		isLoading = true;
-		fetch(`/api/tickets/${data}`)
-			.then(async (res) => {
-				if (!res.ok) {
-					const err = await res.text();
-					throw new Error(err);
-				}
-				return res.json();
+		getTicket(data)
+			.then((result) => {
+				ticket = result;
+				tickets.push(result);
 			})
-			.then((result) => (ticket = result.ticket))
-			.catch(
-				(err) => (error = "Ticket not found or error: " + err.message),
-			)
+			.catch((e) => (error = e.body.message))
 			.finally(() => (isLoading = false));
 	}
 
 	function scanQRCode() {
-		if (videoRef && canvasRef) {
-			const ctx = canvasRef.getContext("2d");
+		if (!videoRef || !canvasRef) return;
 
-			if (ctx && videoRef.readyState === videoRef.HAVE_ENOUGH_DATA) {
-				canvasRef.width = videoRef.videoWidth;
-				canvasRef.height = videoRef.videoHeight;
+		const ctx = canvasRef.getContext("2d");
 
-				ctx.drawImage(
-					videoRef,
-					0,
-					0,
-					canvasRef.width,
-					canvasRef.height,
-				);
+		if (!ctx || videoRef.readyState !== videoRef.HAVE_ENOUGH_DATA) return;
 
-				const imageData = ctx.getImageData(
-					0,
-					0,
-					canvasRef.width,
-					canvasRef.height,
-				);
-				const code = jsQR(
-					imageData.data,
-					canvasRef.width,
-					canvasRef.height,
-				);
+		canvasRef.width = videoRef.videoWidth;
+		canvasRef.height = videoRef.videoHeight;
 
-				if (code && code.data !== lastScannedCode) {
-					lastScannedCode = code.data;
+		ctx.drawImage(videoRef, 0, 0, canvasRef.width, canvasRef.height);
 
-					// Debounce QR scan
-					if (debounceTimeout) {
-						clearTimeout(debounceTimeout);
-					}
+		const imageData = ctx.getImageData(0, 0, canvasRef.width, canvasRef.height);
+		const code = jsQR(imageData.data, canvasRef.width, canvasRef.height);
 
-					debounceTimeout = setTimeout(() => {
-						handleQRResult(code.data);
-					}, 800); // 800ms debounce
-				}
-			}
+		if (code && code.data !== lastScannedCode) {
+			lastScannedCode = code.data;
+
+			// Debounce QR scan
+			if (debounceTimeout) clearTimeout(debounceTimeout);
+
+			debounceTimeout = setTimeout(() => {
+				handleQRResult(code.data);
+			}, 800);
 		}
 	}
 
@@ -129,7 +97,6 @@
 			const tracks = (videoRef.srcObject as MediaStream).getTracks();
 			tracks.forEach((track) => track.stop());
 		}
-		qrResult = null;
 		ticket = null;
 		error = null;
 		if (debounceTimeout) clearTimeout(debounceTimeout);
@@ -138,6 +105,19 @@
 
 <div class="grid">
 	<section class="s12 m6">
+		<article class={[isLoading && "tertiary", ticket && "success", error && "error"]}>
+			<i>info</i>
+			{#if isLoading}
+				<span>Checking ticket...</span>
+			{:else if ticket}
+				<span>Ticket found: {ticket.name}</span>
+			{:else if error}
+				<span>Error: {error}</span>
+			{:else}
+				<span>Scan a QR code to check in a participant.</span>
+			{/if}
+		</article>
+
 		<article class="no-padding">
 			<video
 				bind:this={videoRef}
@@ -148,29 +128,12 @@
 			></video>
 			<canvas bind:this={canvasRef}></canvas>
 		</article>
-		{#if qrResult}<p>Scanned: {qrResult}</p>{/if}
-		{#if isLoading}{@render LoadingCard()}{/if}
-		{#if error}{@render ErrorCard()}{/if}
-		{#if ticket}<pre>{JSON.stringify(ticket, null, 2)}</pre>{/if}
 	</section>
 
 	<article class="s12 m6">
 		<h2 class="small">Checked in participants</h2>
 	</article>
 </div>
-
-{#snippet LoadingCard()}
-	<article class="tertiary">
-		<p>Checking ticket...</p>
-	</article>
-{/snippet}
-
-{#snippet ErrorCard()}
-	<article class="error large-text">
-		<i>error</i> <strong>Error:</strong>
-		{error}
-	</article>
-{/snippet}
 
 <style>
 	video {

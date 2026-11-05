@@ -1,6 +1,6 @@
 import { command, form, getRequestEvent, query } from "$app/server";
-import { eventCreationSchema, eventID, eventRegistrationSchema, eventThumbnailSchema } from "#lib/validation.js";
-import { error, invalid, redirect } from "@sveltejs/kit";
+import { eventCreationSchema, eventID, eventThumbnailSchema } from "#lib/validation.js";
+import { error, invalid } from "@sveltejs/kit";
 
 /**
  * Infer the Event Organiser ID from the authenticated user.
@@ -13,17 +13,6 @@ function getOrganiserID(): string {
 	return "fd6131ea-d7e0-474b-8ec0-f982d0a69dc8"; // ITea Lab Organiser
 }
 
-export const getEventParticipants = query(eventID, async (eventID) => {
-	const sb = getRequestEvent().locals.supabase;
-	const { data: participants, error: queryError } = await sb
-		.from("event_tickets")
-		.select("*")
-		.eq("event_id", eventID);
-
-	if (queryError) error(500, `Failed to fetch attendees: ${queryError.message}`);
-	return participants;
-})
-
 export const getEventQuestionTypes = query(async () => {
 	const sb = getRequestEvent().locals.supabase;
 	const { data: questionTypes, error: queryError } = await sb
@@ -33,6 +22,10 @@ export const getEventQuestionTypes = query(async () => {
 	if (queryError) error(500, `Failed to fetch question types: ${queryError.message}`);
 	return questionTypes;
 })
+
+export const getEvents = query(async () => {})
+
+export const getEvent = query(eventID, async (eventID) => {})
 
 /**
  * Remote function to create an event on the frontend.
@@ -113,45 +106,6 @@ export const updateEventThumbnail = form(eventThumbnailSchema, async ({ eventID,
 	if (updateError) return { success: false, message: `Failed to update event thumbnail: ${updateError.message}` };
 	return { success: true, message: `Event thumbnail updated successfully.` };
 })
-
-/**
- * Remote function to register an event on the frontend.
- *
- * This function validates the input data, creates a ticket in the "event_tickets" table,
- * and stores the survey answers in the "registration_answers" table.
- * Successful registration will redirect the user to the ticket page.
- */
-export const registerEvent = form(eventRegistrationSchema, async ({ eventID, name, email, surveyAnswers }) => {
-	// All users can register events i.e. anon
-	const sb = getRequestEvent().locals.supabase;
-
-	// Upload the base ticket
-	const { data: ticket, error: ticketError } = await sb.from("event_tickets").insert([{
-		event_id: eventID,
-		name,
-		email,
-
-		// TODO: Deprecate these fields
-		academic_year: "other",
-		field_of_study: "other",
-		major: "other",
-	}]).select().single();
-
-	if (ticketError) error(500, `Failed to create ticket: ${ticketError.message}`);
-	if (!ticket) error(500, 'Cannot identify the created ticket. Please contact support.');
-
-	// Upload the survey answers
-	const { error: surveyError } = await sb.from("registration_answers").insert(
-		surveyAnswers.map((answer) => ({
-			ticket_id: ticket.id,
-			question_id: answer.questionID,
-			answer_text: answer.answer,
-		}))
-	).select();
-
-	if (surveyError) error(500, `Failed to create survey answers: ${surveyError.message}`);
-	redirect(303, `/tickets/${ticket.id}`);
-});
 
 export const deleteEvent = command(eventID, async (eventID) => {
 	const sb = getRequestEvent().locals.supabase;

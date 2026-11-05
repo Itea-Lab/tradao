@@ -1,9 +1,12 @@
 import * as yup from 'yup';
 
-export const eventID = yup
-	.string()
+export const eventID = yup.string()
 	.trim().required('Event ID is required')
 	.uuid('Event ID must be a valid UUID');
+
+export const ticketID = yup.string()
+	.trim().required('Ticket ID is required')
+	.uuid('Ticket ID must be a valid UUID');
 
 /** Accommodate datetime-local HTML input format */
 export const localDateTime = yup.string()
@@ -49,7 +52,7 @@ export const eventRegistrationSchema = yup.object({
 	// Survey Answers
 	surveyAnswers: yup
 		.array()
-		.required('Survey answers are required')
+		.default([])
 		.of(
 			yup.object({
 				questionID: yup.string().uuid().required('Question ID is required'),

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
 	import { logout } from "#lib/remotes/auth.remote.js";
-	import { showSnackbar } from "#lib/snackbar.js";
+	import { showSnackbar } from "#lib/utils.js";
 
 	import PageMetadata from "#components/PageMetadata.svelte";
 	import Banner from "#components/Banner.svelte";

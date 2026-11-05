@@ -2,7 +2,8 @@
 	import { goto, refreshAll } from "$app/navigation";
 	import { page } from "$app/state";
 	import { formatDate, showSnackbar } from "#lib/utils.js";
-	import { deleteEvent, getEventParticipants } from "#lib/remotes/events.remote.js";
+	import { deleteEvent } from "#lib/remotes/events.remote.js";
+	import { getEventTickets } from "#lib/remotes/tickets.remote.js";
 	import type { PageProps } from "./$types";
 
 	import Banner from "#components/Banner.svelte";
@@ -241,7 +242,7 @@
 
 <!-- MARK: Dialogue -->
 {#if page.state.dialog === "participants" && page.state.itemID}
-	{@const query = getEventParticipants(page.state.itemID)}
+	{@const query = getEventTickets(page.state.itemID)}
 
 	<Dialogue onClose={closeDialog}>
 		<header class="row">

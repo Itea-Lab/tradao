@@ -3,7 +3,7 @@
 	import { issuesText } from "#lib/utils.js";
 	import { createEvent, getEventQuestionTypes } from "#lib/remotes/events.remote.js";
 	import { RemoteFields } from "./remote_fields";
-	import { showSnackbar } from "#lib/snackbar.js";
+	import { showSnackbar } from "#lib/utils.js";
 
 	// Prop for editing existing event
 	const {
