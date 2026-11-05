@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { goto, refreshAll } from "$app/navigation";
 	import { page } from "$app/state";
-	import { formatDate, issuesText } from "#lib/utils.js";
-	import { showSnackbar } from "#lib/snackbar.js";
+	import { formatDate, showSnackbar } from "#lib/utils.js";
 	import { deleteEvent, getEventParticipants } from "#lib/remotes/events.remote.js";
 	import type { PageProps } from "./$types";
 

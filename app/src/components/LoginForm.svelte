@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { login } from "#lib/remotes/auth.remote.js";
-	import { showSnackbar } from "#lib/snackbar.js";
-	import { issuesText } from "#lib/utils.js";
+	import { issuesText, showSnackbar } from "#lib/utils.js";
 	import { goto } from "$app/navigation";
 	let { redirectTo }: { redirectTo?: string } = $props();
 

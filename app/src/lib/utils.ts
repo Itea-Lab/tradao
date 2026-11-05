@@ -1,5 +1,27 @@
 import type { RemoteFormIssue } from "$app/server";
 
+type SnackbarIcon = "check" | "error" | "info" | "warning";
+
+/**
+ * Show a snackbar message
+ * @param message Snackbar message
+ * @param icon Icon (which also determines the theme)
+ * @param duration Duration to show in milliseconds
+ */
+export function showSnackbar(
+	message: string,
+	icon: SnackbarIcon = "info",
+	duration = 5000
+) {
+	if (typeof window === "undefined") return;
+
+	window.dispatchEvent(
+		new CustomEvent("app-snackbar", {
+			detail: { message, icon, duration }
+		})
+	);
+}
+
 /**
  * Utility function to create an error response for HTTP requests.
  * @param message Error message

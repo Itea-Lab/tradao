@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { updateEventThumbnail } from "#lib/remotes/events.remote.js";
 	import type { Tables } from "#lib/models.js";
-	import { showSnackbar } from "#lib/snackbar.js";
-	import { issuesText } from "#lib/utils.js";
+	import { issuesText, showSnackbar } from "#lib/utils.js";
 	import { onMount } from "svelte";
 
 	let newDisplay: string | null = $state(null);
