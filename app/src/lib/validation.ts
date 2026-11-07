@@ -91,6 +91,9 @@ export const eventCreationSchema = yup.object({
 		.trim()
 		.default(''),
 
+	slug: yup.string()
+		.trim(),
+
 	survey: yup.array().of(
 		yup.object({
 			question: yup.string()

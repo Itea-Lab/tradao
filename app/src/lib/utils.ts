@@ -111,9 +111,3 @@ export function issuesText(issues?: RemoteFormIssue[]) {
 	if (!issues) return "";
 	return issues.map((issue) => issue.message).join(", ");
 }
-
-/** Format file information into a string for display */
-export function fileInfo(defaultText: string, file?: File) {
-	if (!file) return defaultText;
-	return `${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
-}

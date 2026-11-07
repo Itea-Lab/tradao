@@ -22,6 +22,7 @@
 		start_time,
 		end_time,
 		location,
+		slug,
 		category,
 		description: desc,
 		survey,
@@ -35,6 +36,22 @@
 	/** Remove a survey question row */
 	function removeQuestion(index: number) {
 		questionRows.splice(index, 1);
+	}
+
+	/**
+	 * Convert the event title to kebab-case and set as slug.
+	 * Skip if the title is empty.
+	 */
+	function generateEventSlug() {
+		const titleValue = title.value();
+		if (!titleValue) return;
+
+		const kebabTitle = titleValue
+			.trim()
+			.toLowerCase()
+			.replace(/[^a-z0-9]+/g, "-")
+			.replace(/^-+|-+$/g, "");
+		slug.set(kebabTitle);
 	}
 </script>
 
@@ -60,6 +77,7 @@
 		}
 	})}
 >
+	<!-- MARK: Basic -->
 	<h5 class="small">1. Basic details</h5>
 
 	<div class={["field label border prefix", title.issues() && "invalid"]}>
@@ -91,7 +109,25 @@
 		{/if}
 	</div>
 
+	<!-- MARK: Optional -->
 	<h5 class="small">2. Optional details</h5>
+
+	<div class={["field label border prefix suffix", slug.issues() && "invalid"]}>
+		<i>link</i>
+		<input id="ff-slug" {...slug.as("text", event?.slug ?? "")} />
+		<label for="ff-slug">Slug</label>
+		<i
+			role="button"
+			tabindex="0"
+			aria-label="Generate"
+			onclick={generateEventSlug}
+			onkeydown={generateEventSlug}>star</i
+		>
+		<span class="helper">Format: year-kebab-case-title</span>
+		{#if slug.issues()}
+			<output class="invalid">{issuesText(slug.issues())}</output>
+		{/if}
+	</div>
 
 	<div class={["field label border prefix", location.issues() && "invalid"]}>
 		<i>location_on</i>
@@ -115,6 +151,7 @@
 		{/if}
 	</div>
 
+	<!-- MARK: Survey -->
 	<h5 class="small">3. Survey questions</h5>
 
 	{#each questionRows as _, i}

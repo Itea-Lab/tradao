@@ -32,36 +32,30 @@ export const getEvent = query(eventID, async (eventID) => {})
  *
  * This function validates the input data
  */
-export const createEvent = form(eventCreationSchema, async ({ title, description, start_time, end_time, category, location, survey }, issue) => {
+export const createEvent = form(eventCreationSchema, async (form, issue) => {
 	const sb = getRequestEvent().locals.supabase;
 
 	const { data: { user }, error: userError } = await sb.auth.getUser();
 	if (!user || userError) return { success: false, message: 'You must log in to create an event.' };
 
 	// Validate end_time is after start_time
-	if (new Date(end_time) <= new Date(start_time)) {
+	if (new Date(form.end_time) <= new Date(form.start_time)) {
 		invalid(issue.end_time('End time must be after start time'))
 	}
 
 	const organiser_id = getOrganiserID();
 
 	// Upload event data
-	const { data: event, error: eventError } = await sb.from("community_events").insert([{
-		title,
-		description,
-		start_time,
-		end_time,
-		category,
-		location,
-		organiser_id,
-	}]).select().single();
+	const { data: event, error: eventError } = await sb.from("community_events")
+		.insert([{ ...form, organiser_id, }])
+		.select().single();
 
 	if (eventError) return { success: false, message: `Failed to create event: ${eventError.message}` };
 	if (!event) return { success: false, message: 'Cannot identify the created event. Please contact support.' };
 
 	// Upload survey questions
 	const { error: surveyError } = await sb.from("registration_questions").insert(
-		survey.map((q) => ({
+		form.survey.map((q) => ({
 			event_id: event.id,
 			question_type: q.type,
 			question_text: q.question,
