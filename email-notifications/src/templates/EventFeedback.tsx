@@ -18,6 +18,6 @@ export const EventFeedback = (props: EventData) => (
 )
 
 EventFeedback.Subject = (props: EventData) =>
-	`[Test mail|Google pls spare me] How was ${props.title}? We value your feedback!`;
+	`How was ${props.title}? We value your feedback!`;
 
 export default EventFeedback;

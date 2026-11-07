@@ -2,7 +2,7 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"command": "npm run dev",
+			"command": "npm run dev -- --open",
 			"cwd": "${workspaceFolder}/app",
 			"name": "SvelteKit Dev",
 			"request": "launch",

@@ -27,7 +27,7 @@ export const EventReminder = (props: EventData) => (
 
 /** Subject line */
 EventReminder.Subject = (props: EventData) =>
-	`[Test mail|Google pls spare me] ${props.title} Starts Tomorrow!`;
+	`${props.title} Starts Tomorrow!`;
 
 /** The main card that contains the event image and details. */
 const LetterCard = (props: EventData) => (
