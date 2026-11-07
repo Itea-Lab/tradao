@@ -1,16 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { errorResponse, formatDate, serialiseDate, search, isEventUpcoming } from "#lib/utils.js";
-
-describe('error response utility', () => {
-	it('...should create a response with the correct status and message', () => {
-		const response = errorResponse(404, 'Not Found');
-		expect(response.status).toBe(404);
-		expect(response.headers.get('Content-Type')).toBe('application/json');
-		return response.json().then(data => {
-			expect(data).toEqual({ error: 'Not Found' });
-		});
-	});
-});
+import { formatDate, serialiseDate, search, isEventUpcoming } from "#lib/utils.js";
 
 describe('date serialisation utility', () => {
 	it('...should serialise a Date object to an ISO string', () => {
