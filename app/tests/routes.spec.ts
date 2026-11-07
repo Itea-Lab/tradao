@@ -9,7 +9,7 @@ import { createSupabaseClient } from "#lib/supabase.js";
 
 describe("Home page (/)", () => {
 	it("should render the home page component", async () => {
-		const { container } = render(HomePage, {
+		const { container } = await render(HomePage, {
 			data: { events: longMockEvents, supabase: createSupabaseClient(), session: null, user: null }
 		});
 

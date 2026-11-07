@@ -38,7 +38,7 @@ export function serialiseDate(date: Date | string): string {
  * @returns Formatted date string in (default) "dd MMM yyyy, HH:mm" format
  */
 export function formatDate(date: string | Date, opts?: Intl.DateTimeFormatOptions): string {
-	const options: Intl.DateTimeFormatOptions = opts || {
+	return new Date(date).toLocaleString('en-AU', (opts || {
 		year: 'numeric',
 		month: 'short',
 		day: '2-digit',
@@ -47,8 +47,7 @@ export function formatDate(date: string | Date, opts?: Intl.DateTimeFormatOption
 		hour12: false,
 		timeZone: 'Antarctica/Davis', // UTC+7
 		timeZoneName: 'short',
-	};
-	return new Date(date).toLocaleString('en-AU', options);
+	}));
 }
 
 /**
