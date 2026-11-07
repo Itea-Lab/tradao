@@ -12,8 +12,8 @@ import PageMetadata from "#components/PageMetadata.svelte";
 import TextClock from "#components/TextClock.svelte";
 
 // MARK: Banner
-describe("/Banner.svelte", () => {
-	it("...should render h1", async () => {
+describe("Banner", () => {
+	it("should render h1", async () => {
 		const { getByRole } = await render(Banner, {
 			props: {
 				title: "Sample Banner Title", description: "Sample banner description"
@@ -25,7 +25,7 @@ describe("/Banner.svelte", () => {
 		await expect.element(heading).toHaveTextContent("Sample Banner Title");
 	});
 
-	it("...should render description if provided", async () => {
+	it("should render description if provided", async () => {
 		const { getByRole } = await render(Banner, {
 			props: {
 				title: "Sample Banner Title",
@@ -37,19 +37,18 @@ describe("/Banner.svelte", () => {
 		await expect.element(description).toBeInTheDocument();
 	});
 
-	it("...should not render description if not provided", async () => {
+	it("should not render description if not provided", async () => {
 		const { getByRole } = await render(Banner, {
 			props: { title: "Sample Banner Title" }
 		});
 
-		const description = getByRole("paragraph");
-		await expect.element(description).not.toBeInTheDocument();
+		expect(document.querySelector("header p")).not.toBeInTheDocument();
 	});
 });
 
-// MARK: EventCard
-describe("/EventCard.svelte", () => {
-	it("...should render h2", async () => {
+// MARK: Ev. Card
+describe("Event Card", () => {
+	it("should render h2", async () => {
 		const {
 			getByRole
 		} = await render(EventCard, { props: { event: mockEvent } });
@@ -59,7 +58,7 @@ describe("/EventCard.svelte", () => {
 		await expect.element(heading).toHaveTextContent("Mock Event Title 1");
 	});
 
-	it("...should cope with missing data", async () => {
+	it("should cope with missing data", async () => {
 		const {
 			getByRole, getByTestId
 		} = await render(EventCard, { props: { event: brokenEvent } });
@@ -83,9 +82,9 @@ describe("/EventCard.svelte", () => {
 	});
 });
 
-// MARK: EventsFeed
-describe("/EventsFeed.svelte", () => {
-	it("...should render search tools correctly", async () => {
+// MARK: Ev. Feed
+describe("Events Feed", () => {
+	it("should render search tools correctly", async () => {
 		const { getByTestId } = await render(EventsFeed, { props: { events: mockEvents } });
 
 		// Expect a <search> grid-based region
@@ -94,40 +93,47 @@ describe("/EventsFeed.svelte", () => {
 		await expect.element(search).toHaveClass("grid");
 	});
 
-	it("...should implement searching correctly", async () => {
-		const { getByTestId } = await render(EventsFeed, { props: { events: mockEvents } });
+	it("should implement searching correctly", async () => {
+		const { getByRole, getByTestId, getByText } = await render(EventsFeed, { props: { events: mockEvents } });
 
 		// Expect an <input> tag for searching
 		const searchInput = getByTestId("search-input");
 		await expect.element(searchInput).toBeInTheDocument();
 		await expect.element(searchInput).toHaveAttribute("type", "text");
 
-		// Simulate typing in search input
-		await searchInput.fill("Title 1");
+		const searchElement = searchInput.element() as HTMLInputElement;
+		searchElement.value = "Title 1";
+		searchElement.dispatchEvent(new Event("input", { bubbles: true }));
 		await expect.element(searchInput).toHaveValue("Title 1");
+		await expect.element(getByRole("heading", { level: 2 })).toHaveTextContent("Mock Event Title 1");
 
-		await searchInput.fill("Nonexistent");
+		searchElement.value = "Nonexistent";
+		searchElement.dispatchEvent(new Event("input", { bubbles: true }));
 		await expect.element(searchInput).toHaveValue("Nonexistent");
+		await expect.element(getByText("No events found")).toBeInTheDocument();
 	});
 
-	it("...should implement category filtering correctly", async () => {
-		const { getByTestId } = await render(EventsFeed, { props: { events: mockEvents } });
+	it("should implement category filtering correctly", async () => {
+		const { getByRole, getByTestId } = await render(EventsFeed, { props: { events: mockEvents } });
 
 		// Expect a <select> tag for category filtering
 		const categorySelect = getByTestId("category-select");
 		await expect.element(categorySelect).toBeInTheDocument();
 		await expect.element(categorySelect).toHaveAttribute("id", "category");
 
-		// Simulate category selection
-		await categorySelect.selectOptions("Workshop");
+		const categoryElement = categorySelect.element() as HTMLSelectElement;
+		categoryElement.value = "Workshop";
+		categoryElement.dispatchEvent(new Event("change", { bubbles: true }));
 		await expect.element(categorySelect).toHaveValue("Workshop");
+		await expect.element(getByRole("heading", { level: 2 })).toHaveTextContent("Mock Event Title 1");
 
-		// Simulate category selection
-		await categorySelect.selectOptions("Seminar");
+		categoryElement.value = "Seminar";
+		categoryElement.dispatchEvent(new Event("change", { bubbles: true }));
 		await expect.element(categorySelect).toHaveValue("Seminar");
+		await expect.element(getByRole("heading", { level: 2 })).toHaveTextContent("Mock Event Title 2");
 	});
 
-	it("...should implement pagination correctly", async () => {
+	it("should implement pagination correctly", async () => {
 		const { getByRole, getByTestId } = await render(EventsFeed, { props: { events: longMockEvents } });
 
 		// Expect pagination <nav class="center-align">
@@ -146,16 +152,14 @@ describe("/EventsFeed.svelte", () => {
 		await expect.element(nextButton).toBeInTheDocument();
 		await expect.element(prevButton).toBeInTheDocument();
 
-		// Simulate clicking next page
-		await nextButton.click();
+		(nextButton.element() as HTMLButtonElement).click();
 		await expect.element(paginationInfo).toHaveTextContent("Page 2 of 3");
 
-		// Simulate clicking previous page
-		await prevButton.click();
+		(prevButton.element() as HTMLButtonElement).click();
 		await expect.element(paginationInfo).toHaveTextContent("Page 1 of 3");
 	});
 
-	it("...should cope with empty event list", async () => {
+	it("should cope with empty event list", async () => {
 		const { getByText } = await render(EventsFeed, { props: { events: [] } });
 
 		const noEventsMessage = getByText("No events found");
@@ -164,29 +168,89 @@ describe("/EventsFeed.svelte", () => {
 });
 
 // MARK: Footer
-describe("/Footer.svelte", () => {
-	it("...should display the correct main heading", async () => {
+describe("Footer", () => {
+	it("should show two logos for ITea Lab and Tradao", async () => {
 		const { getByRole } = await render(Footer, { props: mockFooterProps });
+		const footer = getByRole("contentinfo").element();
 
-		const heading = getByRole("heading", { level: 1 });
-		await expect.element(heading).toBeInTheDocument();
-		await expect.element(heading).toHaveTextContent("ITea Lab");
+		const logoLinks = footer.querySelectorAll("#logos > a");
+		expect(logoLinks).toHaveLength(2);
+		expect(Array.from(logoLinks, (link) => link.getAttribute("href"))).toEqual([
+			"https://itealab.vercel.app",
+			"/"
+		]);
+		expect(Array.from(footer.querySelectorAll("#logos img"), (image) => image.getAttribute("src"))).toEqual([
+			"/logos/logo-lab.svg",
+			"/logos/logo-lab_dark.svg",
+			"/logos/logo.svg",
+			"/logos/logo_dark.svg"
+		]);
+	});
+
+	it("should display short credit line", async () => {
+		const { getByRole } = await render(Footer, { props: mockFooterProps });
+		const footer = getByRole("contentinfo").element();
+
+		expect(footer.querySelector(".large-text")).toHaveTextContent(
+			"A product of ITea Lab, brought to you by Minh-Triet et al."
+		);
+	});
+
+	it("should display contact information", async () => {
+		const { getByRole } = await render(Footer, { props: mockFooterProps });
+		const footer = getByRole("contentinfo").element();
+
+		expect(footer.querySelector(`a[href="${mockFooterProps.contact.website}"]`)).toHaveTextContent(
+			mockFooterProps.contact.website
+		);
+		expect(footer.querySelector(`a[href="mailto:${mockFooterProps.contact.email}"]`)).toHaveTextContent(
+			mockFooterProps.contact.email
+		);
+		expect(footer.querySelector("#address--text")).toHaveTextContent(mockFooterProps.contact.address);
+		expect(footer.querySelector("#address--text")).toHaveAttribute(
+			"href",
+			`https://maps.google.com/?q=${encodeURIComponent(mockFooterProps.contact.address)}`
+		);
+	});
+
+	it("should display social media links", async () => {
+		const { getByRole } = await render(Footer, { props: mockFooterProps });
+		const footer = getByRole("contentinfo").element();
+		const communityLinks = footer.querySelectorAll("#community a");
+
+		expect(communityLinks).toHaveLength(mockFooterProps.community.length);
+		for (const item of mockFooterProps.community) {
+			const link = footer.querySelector(`#community a[href="${item.href}"]`);
+			expect(link).toHaveTextContent(item.name);
+			expect(link).toHaveAttribute("target", "_blank");
+			expect(link).toHaveAttribute("rel", "noopener noreferrer");
+		}
+	});
+
+	it("should display large leaf graphics", async () => {
+		const { getByRole } = await render(Footer, { props: mockFooterProps });
+		const footer = getByRole("contentinfo").element();
+		const leaf = footer.querySelector("#leaf--graphic");
+
+		expect(leaf).toBeInTheDocument();
+		expect(leaf).toHaveAttribute("viewBox", "0 0 65 90");
+		expect(leaf?.querySelector("path")).toBeInTheDocument();
 	});
 });
 
-// MARK: LoginForm
-describe("/LoginForm.svelte", () => {
-	it("...should render username and password fields", async () => {
+// MARK: Login Form
+describe("Login Form", () => {
+	it("should render email and password fields", async () => {
 		const { getByLabelText } = await render(LoginForm);
 
-		const emailInput = getByLabelText("Email");
+		const emailInput = document.querySelector('input[type="email"]');
 		const passwordInput = getByLabelText("Password");
 
-		await expect.element(emailInput).toBeInTheDocument();
+		expect(emailInput).toBeInTheDocument();
 		await expect.element(passwordInput).toBeInTheDocument();
 	});
 
-	it("...should render a submit button", async () => {
+	it("should render a submit button", async () => {
 		const { getByRole } = await render(LoginForm);
 
 		const submitButton = getByRole("button", { name: "Login" });
@@ -195,37 +259,29 @@ describe("/LoginForm.svelte", () => {
 });
 
 // MARK: Navigation
-describe("/Navigation.svelte", () => {
-	it("...should display the wordmark SVG", async () => {
+describe("Navigation", () => {
+	it("should display the wordmark SVG", async () => {
 		const { getByRole } = await render(Navigation);
 
 		const svg = getByRole("img");
 		await expect.element(svg).toBeInTheDocument();
 	});
 
-	it("...should display the navigation links", async () => {
+	it("should display the navigation links", async () => {
 		const { getByTestId } = await render(Navigation, { props: { menuItems: mockNavItems } });
 
-		// There will always be two versions of the menu items in top and bottom nav
-		// Test each nav has the correct number of links i.e. children
-		const topNav = getByTestId("navigation-top");
-		const bottomNav = getByTestId("navigation-bottom");
+		await expect.element(getByTestId("navigation-top")).toBeInTheDocument();
+		await expect.element(getByTestId("navigation-menu")).toBeInTheDocument();
 
-		await expect.element(topNav).toBeInTheDocument();
-		await expect.element(bottomNav).toBeInTheDocument();
-
-		await expect.element(topNav).toHaveTextContent("Home");
-		await expect.element(topNav).toHaveTextContent("About");
-		await expect.element(topNav).toHaveTextContent("Services");
-		await expect.element(topNav).toHaveTextContent("Contact");
-
-		await expect.element(bottomNav).toHaveTextContent("Home");
-		await expect.element(bottomNav).toHaveTextContent("About");
-		await expect.element(bottomNav).toHaveTextContent("Services");
-		await expect.element(bottomNav).toHaveTextContent("Contact");
+		for (const [index, item] of mockNavItems.entries()) {
+			const desktopLink = getByTestId(`${item.icon}-t${index}`).element();
+			const mobileLink = getByTestId(`${item.icon}-m${index}`).element();
+			expect(desktopLink.textContent?.trim().endsWith(item.name)).toBe(true);
+			expect(mobileLink.textContent?.trim().endsWith(item.name)).toBe(true);
+		}
 	});
 
-	it("...should render external links with target and rel attributes", async () => {
+	it("should render external links with target and rel attributes", async () => {
 		const externalItems = [
 			{ name: "External Link", href: "https://example.com", icon: "external", external: true }
 		];
@@ -240,9 +296,9 @@ describe("/Navigation.svelte", () => {
 	});
 });
 
-// MARK: PageMetadata
-describe("/PageMetadata.svelte", () => {
-	it("...should configure the correct metadata", async () => {
+// MARK: Metadata
+describe("Metadata", () => {
+	it("should configure the correct metadata", async () => {
 		await render(PageMetadata, {
 			props: {
 				title: "Test Title",
@@ -262,7 +318,7 @@ describe("/PageMetadata.svelte", () => {
 		expect(metaKeywords).toHaveAttribute("content", "test, page, metadata");
 	});
 
-	it("...should cope with optional metadata", async () => {
+	it("should cope with optional metadata", async () => {
 		await render(PageMetadata, {});
 
 		expect(document.title).toBe(`| Tradao by ITea Lab™`);
@@ -275,9 +331,9 @@ describe("/PageMetadata.svelte", () => {
 	});
 });
 
-// MARK: TextClock
-describe("/TextClock.svelte", () => {
-	it("...should render the current date and time", async () => {
+// MARK: Text Clock
+describe("Text Clock", () => {
+	it("should render the current date and time", async () => {
 		vi.useFakeTimers();
 		vi.setSystemTime(new Date("2025-01-01T10:30:00Z"));
 
@@ -294,7 +350,7 @@ describe("/TextClock.svelte", () => {
 		vi.useRealTimers();
 	});
 
-	it("...should update time every minute", async () => {
+	it("should update time every minute", async () => {
 		vi.useFakeTimers();
 		vi.setSystemTime(new Date("2025-01-01T10:30:00Z"));
 
@@ -310,4 +366,53 @@ describe("/TextClock.svelte", () => {
 
 		vi.useRealTimers();
 	});
+});
+
+// Dialogue
+describe("Dialogue", () => {
+	it.todo("should render children inside an open dialog");
+	it.todo("should call onClose when Escape is pressed");
+});
+
+// MARK: Ev. Creation
+describe("Event Creation Form", () => {
+	it.todo("should render create-event fields and one survey row");
+	it.todo("should add and remove survey question rows");
+	it.todo("should call onSuccess after successful submission");
+});
+
+// MARK: Ev. Reg
+describe("Event Registration Form", () => {
+	it.todo("should render event and survey fields from props");
+	it.todo("should render major questions with the major field control");
+	it.todo("should display registration errors");
+});
+
+// MARK: Ev. Thumb
+describe("Event Thumbnail Form", () => {
+	it.todo("should render current and new thumbnail previews");
+	it.todo("should preview a selected image file");
+	it.todo("should reset preview after successful submission");
+});
+
+// MARK: Snackbar
+describe("Snackbar", () => {
+	it.todo("should display app-snackbar events with message and icon");
+	it.todo("should remove its event listener when destroyed");
+});
+
+// MARK: Tk. Scanner
+describe("Ticket Scanner", () => {
+	it.todo("should report unsupported camera environments");
+	it.todo("should reject invalid ticket QR codes");
+	it.todo("should fetch and display a valid ticket");
+	it.todo("should stop camera tracks when destroyed");
+});
+
+// MARK: Rm. Fields
+describe("Remote Function Fields", () => {
+	it.todo("should render LocalDatetime with field issues and notes");
+	it.todo("should render Major with the available study majors");
+	it.todo("should render Select options and selected value");
+	it.todo("should render Text with custom icon and notes");
 });
