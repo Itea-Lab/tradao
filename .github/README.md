@@ -42,9 +42,7 @@ The system follows a simplified three-tier architecture that is composed of two 
 
 1. Log in to Supabase via the CLI command `supabase login`.
 2. Have access to a Supabase instance. Get the URL and **Publishable** key.
-3. Have access to a Google Cloud service account. Get the account key.
-4. Have access to a Google Wallet issuer account. Get the issuer ID.
-5. In the `app` and `supabase/functions` directories, create a (dot ENV) `.env` file based on the respective `.env.example` templates.
+3. In the `app` and `supabase/functions` directories, create a (dot ENV) `.env` file based on the respective `.env.example` templates.
 
 ### 3. Setup
 
