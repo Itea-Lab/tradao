@@ -24,9 +24,7 @@
 
 		// Apply category filter
 		if (selectedCategory !== "all") {
-			filtered = filtered.filter(
-				(event) => event.category === selectedCategory,
-			);
+			filtered = filtered.filter((event) => event.category === selectedCategory);
 		}
 
 		return filtered;
@@ -66,14 +64,12 @@
 			value={selectedCategory}
 			title="Filter by category"
 			data-testid="category-select"
-			onchange={(e) =>
-				handleCategoryChange((e.target as HTMLSelectElement).value)}
+			onchange={(e) => handleCategoryChange((e.target as HTMLSelectElement).value)}
 		>
 			<option value="all">All Categories ({events.length})</option>
 			{#each categories as category}
 				<option value={category}>
-					{category} ({events.filter((e) => e.category === category)
-						.length})
+					{category} ({events.filter((e) => e.category === category).length})
 				</option>
 			{/each}
 		</select>
@@ -84,7 +80,14 @@
 <div class="space"></div>
 
 {#if filteredEvents.length === 0}
-	<p>No events found</p>
+	<article>
+		<div class="middle-align center-align">
+			<div>
+				<i class="extra">info</i>
+				<h5 class="small">No events found.</h5>
+			</div>
+		</div>
+	</article>
 {/if}
 
 {#each eventsToDisplay as event (event.id)}
@@ -92,11 +95,7 @@
 {/each}
 
 <nav class="center-align">
-	<button
-		type="button"
-		disabled={currentPage === 1}
-		onclick={() => (currentPage -= 1)}
-	>
+	<button type="button" disabled={currentPage === 1} onclick={() => (currentPage -= 1)}>
 		Previous
 	</button>
 

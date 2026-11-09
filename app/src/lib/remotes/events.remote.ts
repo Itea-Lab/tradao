@@ -13,6 +13,9 @@ function getOrganiserID(): string {
 	return "fd6131ea-d7e0-474b-8ec0-f982d0a69dc8"; // ITea Lab Organiser
 }
 
+/**
+ * Remote function to query all survey question types
+ */
 export const getEventQuestionTypes = query(async () => {
 	const sb = getRequestEvent().locals.supabase;
 	const { data: questionTypes, error: queryError } = await sb
@@ -23,9 +26,19 @@ export const getEventQuestionTypes = query(async () => {
 	return questionTypes;
 })
 
-export const getEvents = query(async () => {})
+/**
+ * Remote function to query all events
+ */
+export const getEvents = query(async () => {
+	const sb = getRequestEvent().locals.supabase;
+	const { data: events, error: queryError } = await sb
+		.from("community_events")
+		.select("*")
+		.order("start_time", { ascending: false });
 
-export const getEvent = query(eventID, async (eventID) => {})
+	if (queryError) error(500, queryError.message);
+	return events;
+})
 
 /**
  * Remote function to create an event on the frontend.
