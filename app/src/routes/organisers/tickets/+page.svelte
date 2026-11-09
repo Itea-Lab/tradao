@@ -45,7 +45,7 @@
 		<tbody>
 			{#each data.tickets as ticket}
 				<tr>
-					<td style="width: 25%;">{ticket.event_title}</td>
+					<td style="width: 25%;">{ticket.event.title}</td>
 					<td style="width: 20%;">{ticket.name}</td>
 
 					<td style="width: 20%;">
