@@ -7,11 +7,19 @@ import { eventID, eventRegistrationSchema, ticketID } from "#lib/validation.js";
  * Remote function to query all tickets.
  * To query tickets of a specific event, use {@link getEventTickets}
  */
-export const getAllEventTickets = query(async () => {
+export const getTicketsWithDetails = query(async () => {
 	const sb = getRequestEvent().locals.supabase;
 	const { data: participants, error: queryError } = await sb
 		.from("event_tickets")
-		.select("*");
+		.select(`
+			*,
+			event: community_events(*),
+			survey: registration_answers(
+				*,
+				question:registration_questions(*)
+			)
+		`)
+		.order("created_at", { ascending: false });
 
 	if (queryError) error(500, queryError.message);
 	return participants;
