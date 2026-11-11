@@ -1,14 +1,17 @@
 import { describe, expect, it, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
+import { createRawSnippet } from "svelte";
 import { mockEvent, brokenEvent, longMockEvents, mockEvents, mockFooterProps, mockItems as mockNavItems } from "./_mock";
 
 import Banner from "#components/Banner.svelte";
+import Dialogue from "#components/Dialogue.svelte";
 import EventCard from "#components/EventCard.svelte";
 import EventsFeed from "#components/EventsFeed.svelte";
 import Footer from "#components/Footer.svelte";
 import LoginForm from "#components/LoginForm.svelte";
 import Navigation from "#components/Navigation.svelte";
 import PageMetadata from "#components/PageMetadata.svelte";
+import Snackbar from "#components/Snackbar.svelte";
 import TextClock from "#components/TextClock.svelte";
 
 // MARK: Banner
@@ -110,7 +113,7 @@ describe("Events Feed", () => {
 		searchElement.value = "Nonexistent";
 		searchElement.dispatchEvent(new Event("input", { bubbles: true }));
 		await expect.element(searchInput).toHaveValue("Nonexistent");
-		await expect.element(getByText("No events found")).toBeInTheDocument();
+		await expect.element(getByText("No events found.")).toBeInTheDocument();
 	});
 
 	it("should implement category filtering correctly", async () => {
@@ -162,7 +165,7 @@ describe("Events Feed", () => {
 	it("should cope with empty event list", async () => {
 		const { getByText } = await render(EventsFeed, { props: { events: [] } });
 
-		const noEventsMessage = getByText("No events found");
+		const noEventsMessage = getByText("No events found.");
 		await expect.element(noEventsMessage).toBeInTheDocument();
 	});
 });
@@ -256,6 +259,22 @@ describe("Login Form", () => {
 		const submitButton = getByRole("button", { name: "Login" });
 		await expect.element(submitButton).toBeInTheDocument();
 	});
+
+	it("should allow toggling password visibility", async () => {
+		const { getByLabelText, getByTestId } = await render(LoginForm);
+		const passwordInput = getByLabelText("Password");
+		const toggleButton = getByTestId("password-toggle");
+
+		await expect.element(passwordInput).toHaveAttribute("type", "password");
+
+		(toggleButton.element() as HTMLButtonElement).click();
+		await expect.element(toggleButton).toHaveAttribute("aria-label", "Hide password");
+		await expect.element(passwordInput).toHaveAttribute("type", "text");
+
+		(toggleButton.element() as HTMLButtonElement).click();
+		await expect.element(toggleButton).toHaveAttribute("aria-label", "Show password");
+		await expect.element(passwordInput).toHaveAttribute("type", "password");
+	})
 });
 
 // MARK: Navigation
@@ -370,8 +389,31 @@ describe("Text Clock", () => {
 
 // Dialogue
 describe("Dialogue", () => {
-	it.todo("should render children inside an open dialog");
-	it.todo("should call onClose when Escape is pressed");
+	it("should render children inside an open dialog", async () => {
+		const children = createRawSnippet(() => ({ render: () => "<p>Dialog content</p>" }));
+		const { getByRole, getByText } = await render(Dialogue, { props: { children, onClose: vi.fn() } });
+
+		await expect.element(getByRole("dialog")).toHaveAttribute("open");
+		await expect.element(getByText("Dialog content")).toBeInTheDocument();
+	});
+
+	it("should call onClose when Escape is pressed", async () => {
+		const onClose = vi.fn();
+		const children = createRawSnippet(() => ({ render: () => "<p>Dialog content</p>" }));
+		await render(Dialogue, { props: { children, onClose } });
+
+		// Pressing Esc trigger onClose
+		window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+		expect(onClose).toHaveBeenCalledOnce();
+
+		// Pressing any other key does not
+		window.dispatchEvent(new KeyboardEvent("keydown", { key: "Space" }));
+		window.dispatchEvent(new KeyboardEvent("keydown", { key: "A" }));
+		window.dispatchEvent(new KeyboardEvent("keydown", { key: "B" }));
+		window.dispatchEvent(new KeyboardEvent("keydown", { key: "5" }));
+		window.dispatchEvent(new KeyboardEvent("keydown", { key: "Alt" }));
+		expect(onClose).toHaveBeenCalledOnce();
+	});
 });
 
 // MARK: Ev. Creation
@@ -397,8 +439,30 @@ describe("Event Thumbnail Form", () => {
 
 // MARK: Snackbar
 describe("Snackbar", () => {
-	it.todo("should display app-snackbar events with message and icon");
-	it.todo("should remove its event listener when destroyed");
+	it("should display app-snackbar events with message and icon", async () => {
+		vi.stubGlobal("ui", vi.fn());
+		const { getByRole } = await render(Snackbar);
+
+		window.dispatchEvent(new CustomEvent("app-snackbar", {
+			detail: { message: "Saved successfully", icon: "error", duration: 5000 }
+		}));
+
+		const snackbar = getByRole("status");
+		await expect.element(snackbar.element().querySelector("span")!).toHaveTextContent("Saved successfully");
+		await expect.element(snackbar).toHaveClass("error active");
+		await expect.element(snackbar.element().querySelector("i")!).toHaveTextContent("error");
+		vi.unstubAllGlobals();
+	});
+
+	it("should remove its event listener when destroyed", async () => {
+		const removeEventListener = vi.spyOn(window, "removeEventListener");
+		const { unmount } = await render(Snackbar);
+
+		unmount();
+
+		expect(removeEventListener).toHaveBeenCalledWith("app-snackbar", expect.any(Function));
+		removeEventListener.mockRestore();
+	});
 });
 
 // MARK: Tk. Scanner

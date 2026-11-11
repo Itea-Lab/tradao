@@ -27,7 +27,7 @@
 	aria-live="polite"
 	role="status"
 	class={[
-		"snackbar top",
+		"snackbar",
 		icon === "info" && "primary active",
 		icon === "error" && "error active",
 	]}

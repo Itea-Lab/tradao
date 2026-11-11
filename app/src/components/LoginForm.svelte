@@ -6,17 +6,10 @@
 
 	let showPassword = $state(false);
 
-	const { email, _password, allIssues } = login.fields;
+	const { email, _password } = login.fields;
 
 	function togglePasswordVisibility() {
 		showPassword = !showPassword;
-	}
-
-	function handlePasswordToggleKeydown(event: KeyboardEvent) {
-		if (event.key === "Enter" || event.key === " ") {
-			event.preventDefault();
-			togglePasswordVisibility();
-		}
 	}
 </script>
 
@@ -45,21 +38,13 @@
 		<div class="field border label prefix suffix">
 			<i>lock</i>
 			<input
-				{..._password.as(showPassword ? "text" : "password")}
+				{..._password.as("password")}
+				type={showPassword ? "text" : "password"}
 				id="password"
 				autocomplete="current-password"
 				required
 			/>
 			<label for="password" class="font-bold">Password</label>
-			<i
-				class="front"
-				role="button"
-				tabindex="0"
-				aria-label={showPassword ? "Hide password" : "Show password"}
-				onclick={togglePasswordVisibility}
-				onkeydown={handlePasswordToggleKeydown}
-				>{showPassword ? "visibility_off" : "visibility"}</i
-			>
 			{#if email.issues()}
 				<output class="invalid">{issuesText(email.issues())}</output>
 			{/if}
@@ -67,6 +52,21 @@
 
 		<div class="space"></div>
 
-		<button type="submit" class="responsive" disabled={!!login.pending}>Login</button>
+		<div class="grid">
+			<button type="submit" class="s9" disabled={!!login.pending}>
+				Login
+			</button>
+
+			<button
+				type="button"
+				class="s3 surface-variant round"
+				data-testid="password-toggle"
+				aria-label={showPassword ? "Hide password" : "Show password"}
+				onclick={togglePasswordVisibility}
+			>
+				<i>{showPassword ? "visibility_off" : "visibility"}</i>
+				<span class="tooltip bottom">{showPassword ? "Hide password" : "Show password"}</span>
+			</button>
+		</div>
 	</form>
 </article>
