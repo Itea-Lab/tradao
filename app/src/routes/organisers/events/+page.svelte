@@ -145,7 +145,7 @@
 			<i>more_vert</i>
 		</button>
 
-		<menu class="group left no-wrap">
+		<menu class="left no-wrap">
 			{#each [{ id: "thumbnail", label: "Edit thumbnail", icon: "image" }, { id: "edit", label: "Edit details", icon: "edit" }, { id: "delete", label: "Delete", icon: "delete" }] as item}
 				<li class="no-padding">
 					<button
@@ -170,9 +170,9 @@
 		<header class="row">
 			<h5 class="max">Create New Event</h5>
 
-			<button class="circle border extend" onclick={closeDialog}>
+			<button class="circle border" onclick={closeDialog}>
 				<i>close</i>
-				<span>Close</span>
+				<span class="tooltip">Close</span>
 			</button>
 		</header>
 
@@ -190,9 +190,9 @@
 		<header class="row">
 			<h5 class="max">Edit Event</h5>
 
-			<button class="circle border extend" onclick={closeDialog}>
+			<button class="circle border" onclick={closeDialog}>
 				<i>close</i>
-				<span>Close</span>
+				<span class="tooltip">Close</span>
 			</button>
 		</header>
 
@@ -254,21 +254,21 @@
 			<h5 class="max">Attendees</h5>
 
 			<button
-				class="circle border extend"
-				onclick={() => goto(`/organisers/tickets`)}
+				class="circle border"
+				onclick={() => goto(`/organisers/tickets?eventID=${page.state.itemID}`)}
 			>
 				<i>open_in_full</i>
-				<span>View in Manage Tickets</span>
+				<span class="tooltip">View in Manage Tickets</span>
 			</button>
 
-			<button class="circle border extend" onclick={() => query.refresh()}>
+			<button class="circle border" onclick={() => query.refresh()}>
 				<i>refresh</i>
-				<span>Refresh</span>
+				<span class="tooltip">Refresh</span>
 			</button>
 
-			<button class="circle border extend" onclick={closeDialog}>
+			<button class="circle border" onclick={closeDialog}>
 				<i>close</i>
-				<span>Close</span>
+				<span class="tooltip">Close</span>
 			</button>
 		</header>
 
@@ -318,9 +318,9 @@
 		<header class="row">
 			<h5 class="max">Edit Event Thumbnail</h5>
 
-			<button class="circle border extend" onclick={closeDialog}>
+			<button class="circle border" onclick={closeDialog}>
 				<i>close</i>
-				<span>Close</span>
+				<span class="tooltip">Close</span>
 			</button>
 		</header>
 

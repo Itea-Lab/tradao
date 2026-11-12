@@ -16,8 +16,8 @@
 	});
 </script>
 
-<span>
-	<i class="prefix-icon">schedule</i>
+<div class="row" style="gap: 0.5rem">
+	<i>schedule</i>
 	<span data-testid="time">
 		{formatDate(time, { hour: "2-digit", minute: "2-digit", hour12: false })}
 	</span>
@@ -25,4 +25,4 @@
 	<span data-testid="date">
 		{formatDate(time, { weekday: "short", day: "2-digit", month: "short" })}
 	</span>
-</span>
+</div>

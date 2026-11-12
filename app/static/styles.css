@@ -9,6 +9,10 @@
 	box-sizing: border-box;
 }
 
+.google-sans {
+	--font: 'Google Sans Plex', 'Segoe UI', sans-serif;
+}
+
 .block {
 	display: block;
 	width: 100%;

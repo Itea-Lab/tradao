@@ -10,16 +10,29 @@
 	<link rel="stylesheet" href="/styles.css" />
 	<link rel="icon" href="/icons/icon.svg" />
 	<link rel="manifest" href="/manifest.json" />
-	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/beercss@3.13.1/dist/cdn/beer.min.css" />
 
-	<script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.13.1/dist/cdn/beer.min.js"></script>
-	<script type="module"
-		src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.2/dist/cdn/material-dynamic-colors.min.js"></script>
+	<link rel="stylesheet" crossorigin="anonymous"
+		integrity="sha384-EqZ6IXmk+4jeYN6dm7SEK3B8T8AMiHLEujTTup/LU1rSEjt1Ce8Vz8uI6NQ8czHg"
+		href="https://cdn.jsdelivr.net/npm/beercss@5.0.3/dist/cdn/beer.min.css">
+
+	<script type="module" crossorigin="anonymous"
+		integrity="sha384-7xZPd8qp8XUHrLKlKeZKr5yHcqeQ0Juz7GLT0AOsAIMhtHNqKJg5bfFCj782KnFh"
+		src="https://cdn.jsdelivr.net/npm/beercss@5.0.3/dist/cdn/beer.min.js"></script>
+
+	<script type="module" crossorigin="anonymous"
+		integrity="sha384-JtrVMEPzvwNPLzvea9qzdVrF7GCX5QmAA4TrSZqK6Ojv4C9VnCKhEgZRe35OCzqR"
+		src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.4/dist/cdn/material-dynamic-colors.min.js"></script>
+
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+	<link rel="stylesheet"
+		href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@1..144,1..1000&display=swap">
 
 	%sveltekit.head%
 </head>
 
-<body class="dark" data-sveltekit-preload-data="hover">
+<body class="dark google-sans" data-sveltekit-preload-data="hover">
 	%sveltekit.body%
 	<script>
 		setTimeout(() => { ui('theme', '#a8cd89'); }, 200);

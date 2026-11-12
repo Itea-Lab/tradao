@@ -34,6 +34,7 @@
 			data-testid="theme-toggle-button"
 		>
 			<i>{modes[iMode].icon}</i>
+			<span class="tooltip bottom">{modes[iMode].id}</span>
 		</button>
 	</div>
 {/snippet}
@@ -43,10 +44,15 @@
 		<button class="transparent circle" data-testid="menu-button">
 			<i>menu</i>
 		</button>
-		<menu id="menu" class="{offset} {isOnTop ? 'top' : ''} no-wrap" data-testid="navigation-menu">
+		<menu
+			id="menu"
+			class="{offset} {isOnTop ? 'top' : ''} no-wrap"
+			data-testid="navigation-menu"
+		>
 			{#each menuItems as item, index}
 				<li>
 					<a
+						class="button transparent"
 						href={item.href}
 						target={item.external ? "_blank" : "_self"}
 						rel={item.external ? "noopener noreferrer" : ""}
@@ -64,10 +70,8 @@
 <!-- Medium & Large Screen: Top navigation bar -->
 <nav class="top m l" data-testid="navigation-top">
 	<p class="large-text">
-		<a href="/">
-			<img class="logo light" src="/logos/logo.svg" alt="Tradao Logo" />
-			<img class="logo dark" src="/logos/logo_dark.svg" alt="Tradao Logo" />
-		</a>
+		<img class="logo light" src="/logos/logo.svg" alt="Tradao Logo" />
+		<img class="logo dark" src="/logos/logo_dark.svg" alt="Tradao Logo" />
 	</p>
 
 	<div class="max"></div>
@@ -84,8 +88,8 @@
 				rel={item.external ? "noopener noreferrer" : ""}
 				data-testid={`${item.icon}-t${index}`}
 			>
-				<i class="prefix-icon">{item.icon}</i>
-				{item.name}
+				<i>{item.icon}</i>
+				<span>{item.name}</span>
 			</a>
 		{/each}
 
