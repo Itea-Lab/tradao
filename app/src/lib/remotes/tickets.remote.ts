@@ -78,6 +78,25 @@ export const getTicket = query(ticketID, async (id) => {
 });
 
 /**
+ * Remote function to get the tickets count of events
+ */
+export const getTicketsCount = query.batch(eventID, async (eventIDs) => {
+	const sb = getRequestEvent().locals.supabase;
+	const { data: events, error: queryError } = await sb.from("community_events")
+		.select("id, tickets: event_tickets(count)")
+		.in("id", eventIDs);
+
+	if (queryError) error(500, queryError.message);
+
+	const lookup = new Map<string, number>();
+	for (const { id, tickets } of events) {
+		lookup.set(id, tickets[0]?.count ?? 0);
+	}
+
+	return (eventID) => lookup.get(eventID) ?? 0;
+});
+
+/**
  * Remote function to register an event on the frontend.
  *
  * This function validates the input data, creates a ticket in the "event_tickets" table,

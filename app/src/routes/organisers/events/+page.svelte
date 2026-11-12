@@ -1,10 +1,10 @@
 <script lang="ts">
+	import { onMount } from "svelte";
 	import { goto, refreshAll } from "$app/navigation";
 	import { page } from "$app/state";
+	import { deleteEvent, getEvents } from "#lib/remotes/events.remote.js";
+	import { getEventTickets, getTicketsCount } from "#lib/remotes/tickets.remote.js";
 	import { formatDate, showSnackbar } from "#lib/utils.js";
-	import { deleteEvent } from "#lib/remotes/events.remote.js";
-	import { getEventTickets } from "#lib/remotes/tickets.remote.js";
-	import type { PageProps } from "./$types";
 
 	import Banner from "#components/Banner.svelte";
 	import Dialogue from "#components/Dialogue.svelte";
@@ -12,11 +12,15 @@
 	import PageMetadata from "#components/PageMetadata.svelte";
 	import EventThumbnailForm from "#components/EventThumbnailForm.svelte";
 
-	let { data }: PageProps = $props();
 	let searchQuery = $state("");
+	let events = $state<Awaited<ReturnType<typeof getEvents>>>([]);
+
+	onMount(async () => {
+		events = await getEvents();
+	})
 
 	function findEvent(eventId: string) {
-		return data.events.find((e) => e.id === eventId);
+		return events.find((e) => e.id === eventId);
 	}
 
 	function handleKeyDown(event: KeyboardEvent) {
@@ -102,7 +106,8 @@
 		</thead>
 
 		<tbody>
-			{#each data.events as event}
+			{#each events as event}
+				{@const ticketCount = await getTicketsCount(event.id)}
 				<tr>
 					<td>{event.title}</td>
 					<td>{event.category}</td>
@@ -112,10 +117,10 @@
 					<td class="center-align">
 						<button
 							class="responsive chip"
-							disabled={event.attendee_count === 0}
+							disabled={ticketCount === 0}
 							onclick={() => openDialogue("participants", event.id)}
 						>
-							{event.attendee_count === 0 ? "None" : event.attendee_count}
+							{ticketCount === 0 ? "None" : ticketCount}
 						</button>
 					</td>
 					<td>{@render EventMenu(event.id)}</td>
@@ -126,7 +131,7 @@
 		<tfoot class="fixed">
 			<tr>
 				<td colspan="7" class="right-align">
-					<small>{data.events.length} events</small>
+					<small>{events.length} events</small>
 				</td>
 			</tr>
 		</tfoot>
@@ -268,7 +273,7 @@
 		</header>
 
 		<div class="medium-height scroll surface-container-high">
-			{#if findEvent(page.state.itemID)?.attendee_count === 0}
+			{#if await getTicketsCount(page.state.itemID) === 0}
 				<p class="center-align">No participants found.</p>
 			{:else}
 				<table class="stripes">
@@ -296,7 +301,7 @@
 						<tr>
 							<td colspan="2" class="right-align">
 								<small>
-									{findEvent(page.state.itemID)?.attendee_count || NaN} participants
+									{await getTicketsCount(page.state.itemID)} participants
 								</small>
 							</td>
 						</tr>
