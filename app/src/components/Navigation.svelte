@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { page } from "$app/state";
 	import TextClock from "./TextClock.svelte";
 
 	const modes = [
@@ -83,6 +84,7 @@
 
 		{#each menuItems as item, index}
 			<a
+				class={[item.href === page.route.id && "active"]}
 				href={item.href}
 				target={item.external ? "_blank" : "_self"}
 				rel={item.external ? "noopener noreferrer" : ""}
