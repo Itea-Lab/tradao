@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount, tick } from "svelte";
 
+	let snackbarRef: HTMLElement | null;
 	let message = $state("");
 	let icon = $state("");
 
@@ -11,7 +12,13 @@
 			icon = next.icon;
 
 			await tick();
-			ui("#app-snackbar", next.duration);
+			try {
+				ui("#app-snackbar", next.duration);
+			} catch (error) {
+				if (!snackbarRef) return;
+				snackbarRef.showPopover();
+				setTimeout(snackbarRef.showPopover, next.duration);
+			}
 		};
 
 		window.addEventListener("app-snackbar", handleSnackbar);
@@ -23,6 +30,7 @@
 </script>
 
 <div
+	bind:this={snackbarRef}
 	id="app-snackbar"
 	aria-live="polite"
 	role="status"

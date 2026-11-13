@@ -439,18 +439,21 @@ describe("Event Thumbnail Form", () => {
 
 // MARK: Snackbar
 describe("Snackbar", () => {
-	it("should display app-snackbar events with message and icon", async () => {
+	it.each([
+		{ icon: "info", className: "primary active" },
+		{ icon: "error", className: "error active" },
+	])("should display $icon app-snackbar events with message and icon", async ({ icon, className }) => {
 		vi.stubGlobal("ui", vi.fn());
 		const { getByRole } = await render(Snackbar);
 
 		window.dispatchEvent(new CustomEvent("app-snackbar", {
-			detail: { message: "Saved successfully", icon: "error", duration: 5000 }
+			detail: { message: "Saved successfully", icon, duration: 5000 }
 		}));
 
 		const snackbar = getByRole("status");
 		await expect.element(snackbar.element().querySelector("span")!).toHaveTextContent("Saved successfully");
-		await expect.element(snackbar).toHaveClass("error active");
-		await expect.element(snackbar.element().querySelector("i")!).toHaveTextContent("error");
+		await expect.element(snackbar).toHaveClass(className);
+		await expect.element(snackbar.element().querySelector("i")!).toHaveTextContent(icon);
 		vi.unstubAllGlobals();
 	});
 

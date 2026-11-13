@@ -5,6 +5,16 @@ import type { Session, SupabaseClient, User } from '@supabase/supabase-js';
 import type { Database } from '#lib/models.js';
 
 declare global {
+	/** BeerCSS: Change UI mode i.e. light/dark/auto */
+	function ui(action: "mode", value: string): void;
+
+	/**
+	 * BeerCSS: Show a snackbar
+	 * @param query Query string to locate the snackbar element
+	 * @param duration How long the snackbar will show (ms)
+	 */
+	function ui(query: string, duration?: number): void;
+
 	namespace App {
 		// interface Error {}
 		interface Locals {

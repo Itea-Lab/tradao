@@ -6,7 +6,7 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || '';
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_KEY || '';
 
 export const handle: Handle = async ({ event, resolve }) => {
-	// Create Supabase client with cookie handling
+	/** Server-side Supabase client with cookie handling */
 	event.locals.supabase = createServerClient<Database>(SUPABASE_URL, SUPABASE_KEY, {
 		cookies: {
 			getAll: () => {
@@ -20,9 +20,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 		},
 	});
 
-	/**
-	 * Get session from Supabase
-	 */
+	/** Get user login session */
 	event.locals.safeGetSession = async () => {
 		const {
 			data: { session },

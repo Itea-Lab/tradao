@@ -1,5 +1,9 @@
-import { describe, expect, it } from "vitest";
-import { formatDate, serialiseDate, search, isEventUpcoming } from "#lib/utils.js";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { formatDate, serialiseDate, search, isEventUpcoming, showSnackbar, issuesText } from "#lib/utils.js";
+
+afterEach(() => {
+	vi.restoreAllMocks();
+});
 
 describe('date serialisation utility', () => {
 	it.each([
@@ -57,5 +61,50 @@ describe('event date utility', () => {
 	it.each([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])('should return false if the event is in the past (%i days)', (days) => {
 		const pastDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 		expect(isEventUpcoming(pastDate)).toBe(false);
+	});
+});
+
+describe("snackbar utility", () => {
+	it("dispatches a snackbar event with default options", () => {
+		const dispatchEvent = vi.spyOn(window, "dispatchEvent");
+
+		showSnackbar("Saved");
+
+		expect(dispatchEvent).toHaveBeenCalledOnce();
+		expect(dispatchEvent).toHaveBeenCalledWith(
+			expect.objectContaining({
+				type: "app-snackbar",
+				detail: { message: "Saved", icon: "info", duration: 5000 }
+			})
+		);
+	});
+
+	it("dispatches a snackbar event with custom options", () => {
+		const dispatchEvent = vi.spyOn(window, "dispatchEvent");
+
+		showSnackbar("Failed", "error", 2000);
+
+		expect(dispatchEvent).toHaveBeenCalledWith(
+			expect.objectContaining({
+				type: "app-snackbar",
+				detail: { message: "Failed", icon: "error", duration: 2000 }
+			})
+		);
+	});
+});
+
+describe("form issues utility", () => {
+	it("returns an empty string when issues are omitted or empty", () => {
+		expect(issuesText()).toBe("");
+		expect(issuesText([])).toBe("");
+	});
+
+	it("joins issue messages with commas", () => {
+		expect(
+			issuesText([
+				{ message: "Required", path: ["name"] },
+				{ message: "Too short", path: ["name"] }
+			])
+		).toBe("Required, Too short");
 	});
 });
