@@ -10,7 +10,7 @@ export type Database = {
 	// Allows to automatically instantiate createClient with right options
 	// instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
 	__InternalSupabase: {
-		PostgrestVersion: "14.5";
+		PostgrestVersion: "14.18";
 	};
 	graphql_public: {
 		Tables: {
@@ -139,71 +139,35 @@ export type Database = {
 			};
 			event_tickets: {
 				Row: {
-					academic_year: string;
 					created_at: string;
 					email: string;
 					event_id: string;
-					field_of_study: string;
 					id: string;
-					major: string;
 					name: string;
-					participate: boolean;
-					student_id: string | null;
 					updated_at: string;
 				};
 				Insert: {
-					academic_year: string;
 					created_at?: string;
 					email: string;
 					event_id: string;
-					field_of_study: string;
 					id?: string;
-					major: string;
 					name: string;
-					participate?: boolean;
-					student_id?: string | null;
 					updated_at?: string;
 				};
 				Update: {
-					academic_year?: string;
 					created_at?: string;
 					email?: string;
 					event_id?: string;
-					field_of_study?: string;
 					id?: string;
-					major?: string;
 					name?: string;
-					participate?: boolean;
-					student_id?: string | null;
 					updated_at?: string;
 				};
 				Relationships: [
-					{
-						foreignKeyName: "event_tickets_academic_year_fkey";
-						columns: ["academic_year"];
-						isOneToOne: false;
-						referencedRelation: "academic_status";
-						referencedColumns: ["id"];
-					},
 					{
 						foreignKeyName: "event_tickets_event_id_fkey";
 						columns: ["event_id"];
 						isOneToOne: false;
 						referencedRelation: "community_events";
-						referencedColumns: ["id"];
-					},
-					{
-						foreignKeyName: "event_tickets_event_id_fkey";
-						columns: ["event_id"];
-						isOneToOne: false;
-						referencedRelation: "upcoming_events";
-						referencedColumns: ["id"];
-					},
-					{
-						foreignKeyName: "event_tickets_field_of_study_fkey";
-						columns: ["field_of_study"];
-						isOneToOne: false;
-						referencedRelation: "fields_of_study";
 						referencedColumns: ["id"];
 					},
 				];
@@ -281,13 +245,6 @@ export type Database = {
 						referencedRelation: "event_tickets";
 						referencedColumns: ["id"];
 					},
-					{
-						foreignKeyName: "registration_answers_ticket_id_fkey";
-						columns: ["ticket_id"];
-						isOneToOne: false;
-						referencedRelation: "tickets_with_event_details";
-						referencedColumns: ["ticket_id"];
-					},
 				];
 			};
 			registration_questions: {
@@ -327,13 +284,6 @@ export type Database = {
 						referencedColumns: ["id"];
 					},
 					{
-						foreignKeyName: "registration_questions_event_id_fkey";
-						columns: ["event_id"];
-						isOneToOne: false;
-						referencedRelation: "upcoming_events";
-						referencedColumns: ["id"];
-					},
-					{
 						foreignKeyName:
 							"registration_questions_question_type_fkey";
 						columns: ["question_type"];
@@ -345,94 +295,7 @@ export type Database = {
 			};
 		};
 		Views: {
-			tickets_with_event_details: {
-				Row: {
-					academic_year: string | null;
-					created_at: string | null;
-					email: string | null;
-					event_category: string | null;
-					event_description: string | null;
-					event_end_time: string | null;
-					event_id: string | null;
-					event_image: string | null;
-					event_location: string | null;
-					event_start_time: string | null;
-					event_title: string | null;
-					field_of_study: string | null;
-					major: string | null;
-					name: string | null;
-					organiser_name: string | null;
-					participate: boolean | null;
-					student_id: string | null;
-					ticket_id: string | null;
-				};
-				Relationships: [
-					{
-						foreignKeyName: "event_tickets_event_id_fkey";
-						columns: ["event_id"];
-						isOneToOne: false;
-						referencedRelation: "community_events";
-						referencedColumns: ["id"];
-					},
-					{
-						foreignKeyName: "event_tickets_event_id_fkey";
-						columns: ["event_id"];
-						isOneToOne: false;
-						referencedRelation: "upcoming_events";
-						referencedColumns: ["id"];
-					},
-				];
-			};
-			upcoming_events: {
-				Row: {
-					category: string | null;
-					created_at: string | null;
-					description: string | null;
-					end_time: string | null;
-					id: string | null;
-					image: string | null;
-					location: string | null;
-					organiser_id: string | null;
-					start_time: string | null;
-					title: string | null;
-					updated_at: string | null;
-				};
-				Insert: {
-					category?: string | null;
-					created_at?: string | null;
-					description?: string | null;
-					end_time?: string | null;
-					id?: string | null;
-					image?: string | null;
-					location?: string | null;
-					organiser_id?: string | null;
-					start_time?: string | null;
-					title?: string | null;
-					updated_at?: string | null;
-				};
-				Update: {
-					category?: string | null;
-					created_at?: string | null;
-					description?: string | null;
-					end_time?: string | null;
-					id?: string | null;
-					image?: string | null;
-					location?: string | null;
-					organiser_id?: string | null;
-					start_time?: string | null;
-					title?: string | null;
-					updated_at?: string | null;
-				};
-				Relationships: [
-					{
-						foreignKeyName: "community_events_organiser_id_fkey";
-						columns: ["organiser_id"];
-						isOneToOne: false;
-						referencedRelation: "event_organisers";
-						referencedColumns: ["id"];
-					},
-				];
-			};
+			[_ in never]: never;
 		};
 		Functions: {
 			[_ in never]: never;

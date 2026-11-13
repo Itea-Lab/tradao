@@ -108,16 +108,9 @@ export const registerEvent = form(eventRegistrationSchema, async ({ eventID, nam
 	const sb = getRequestEvent().locals.supabase;
 
 	// Upload the base ticket
-	const { data: ticket, error: ticketError } = await sb.from("event_tickets").insert([{
-		event_id: eventID,
-		name,
-		email,
-
-		// TODO: Deprecate these fields
-		academic_year: "other",
-		field_of_study: "other",
-		major: "other",
-	}]).select().single();
+	const { data: ticket, error: ticketError } = await sb.from("event_tickets")
+		.insert([{ event_id: eventID, name, email }])
+		.select().single();
 
 	if (ticketError) error(500, `Failed to create ticket: ${ticketError.message}`);
 	if (!ticket) error(500, 'Cannot identify the created ticket. Please contact support.');
