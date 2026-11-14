@@ -86,33 +86,104 @@ export const createEvent = form(eventCreationSchema, async (form, issue) => {
  * and updates the event with the new thumbnail URL.
  * Successful update will return a success message.
  */
-export const updateEventThumbnail = form(eventThumbnailSchema, async ({ eventID, thumbnail }) => {
-	const sb = getRequestEvent().locals.supabase;
 
-	const { data: { user }, error: userError } = await sb.auth.getUser();
-	if (!user || userError) return { success: false, message: 'You must log in to update an event thumbnail.' };
+export const updateEventThumbnail = form(
+  eventThumbnailSchema,
+  async ({ eventID, thumbnail }) => {
+    const sb = getRequestEvent().locals.supabase;
 
-	// Skip empty thumbnail uploads (no changes)
-	if (thumbnail.size === 0) return { success: false, message: 'No changes' };
+    const {
+      data: { user },
+      error: userError
+    } = await sb.auth.getUser();
 
-	// Upload thumbnail file to storage bucket
-	const path = `event_thumbnails/${eventID}.${thumbnail.name.split(".").pop()}`;
-	const { error: uploadError } = await sb.storage.from("assets")
-		.upload(path, thumbnail, { upsert: true });
+    if (!user || userError) {
+      return {
+        success: false,
+        message: 'You must log in to update an event thumbnail.'
+      };
+    }
 
-	if (uploadError) return { success: false, message: `Failed to upload event thumbnail: ${uploadError.message}` };
+    if (!thumbnail || thumbnail.size === 0) {
+      return {
+        success: false,
+        message: 'No changes'
+      };
+    }
 
-	// Get the public URL of the uploaded thumbnail
-	const { data: { publicUrl } } = sb.storage.from("assets").getPublicUrl(path);
+    const extension = thumbnail.name.split('.').pop();
+    const path = `event_thumbnails/${eventID}.${extension}`;
 
-	// Update the event with the new thumbnail URL
-	const { error: updateError } = await sb.from("community_events")
-		.update({ image: publicUrl })
-		.eq("id", eventID);
+    try {
+      // Explicitly convert File to ArrayBuffer
+      const fileBuffer = await thumbnail.arrayBuffer();
 
-	if (updateError) return { success: false, message: `Failed to update event thumbnail: ${updateError.message}` };
-	return { success: true, message: `Event thumbnail updated successfully.` };
-})
+      console.log('Thumbnail upload debug:', {
+        name: thumbnail.name,
+        size: thumbnail.size,
+        bufferSize: fileBuffer.byteLength,
+        type: thumbnail.type
+      });
+
+      if (fileBuffer.byteLength === 0) {
+        return {
+          success: false,
+          message: 'Thumbnail file is empty.'
+        };
+      }
+
+      // Upload to Supabase Storage
+      const { error: uploadError } = await sb.storage
+        .from('assets')
+        .upload(path, fileBuffer, {
+          upsert: true,
+          contentType: thumbnail.type || 'image/jpeg'
+        });
+
+      if (uploadError) {
+        console.error('Supabase upload error:', uploadError);
+
+        return {
+          success: false,
+          message: `Failed to upload event thumbnail: ${uploadError.message}`
+        };
+      }
+
+      // Get public URL
+      const { data: { publicUrl } } = sb.storage
+        .from('assets')
+        .getPublicUrl(path);
+
+      // Update database
+      const { error: updateError } = await sb
+        .from('community_events')
+        .update({ image: publicUrl })
+        .eq('id', eventID);
+
+      if (updateError) {
+        console.error('Database update error:', updateError);
+
+        return {
+          success: false,
+          message: `Failed to update event thumbnail: ${updateError.message}`
+        };
+      }
+
+      return {
+        success: true,
+        message: 'Event thumbnail updated successfully.'
+      };
+
+    } catch (error) {
+      console.error('Thumbnail upload exception:', error);
+
+      return {
+        success: false,
+        message: 'Unexpected error uploading thumbnail.'
+      };
+    }
+  }
+);
 
 export const deleteEvent = command(eventID, async (eventID) => {
 	const sb = getRequestEvent().locals.supabase;
