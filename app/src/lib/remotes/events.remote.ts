@@ -95,12 +95,27 @@ export const updateEventThumbnail = form(eventThumbnailSchema, async ({ eventID,
 	// Skip empty thumbnail uploads (no changes)
 	if (thumbnail.size === 0) return { success: false, message: 'No changes' };
 
+	// Explicitly convert File to ArrayBuffer
+	const fileBuffer = await thumbnail.arrayBuffer();
+
+	console.log('Thumbnail upload debug:', {
+		name: thumbnail.name,
+		size: thumbnail.size,
+		bufferSize: fileBuffer.byteLength,
+		type: thumbnail.type
+	});
+
+	if (fileBuffer.byteLength === 0) return { success: false, message: 'Thumbnail file is empty.' };
+
 	// Upload thumbnail file to storage bucket
 	const path = `event_thumbnails/${eventID}.${thumbnail.name.split(".").pop()}`;
 	const { error: uploadError } = await sb.storage.from("assets")
-		.upload(path, thumbnail, { upsert: true });
+		.upload(path, fileBuffer, { upsert: true, contentType: thumbnail.type || 'image/jpeg' });
 
-	if (uploadError) return { success: false, message: `Failed to upload event thumbnail: ${uploadError.message}` };
+	if (uploadError) {
+		console.error('Supabase upload error:', uploadError);
+		return { success: false, message: `Failed to upload event thumbnail: ${uploadError.message}` };
+	}
 
 	// Get the public URL of the uploaded thumbnail
 	const { data: { publicUrl } } = sb.storage.from("assets").getPublicUrl(path);
@@ -110,7 +125,11 @@ export const updateEventThumbnail = form(eventThumbnailSchema, async ({ eventID,
 		.update({ image: publicUrl })
 		.eq("id", eventID);
 
-	if (updateError) return { success: false, message: `Failed to update event thumbnail: ${updateError.message}` };
+	if (updateError) {
+		console.error('Database update error:', updateError);
+		return { success: false, message: `Failed to update event thumbnail: ${updateError.message}` };
+	}
+
 	return { success: true, message: `Event thumbnail updated successfully.` };
 })
 
