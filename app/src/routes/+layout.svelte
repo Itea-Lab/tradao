@@ -14,6 +14,12 @@
 			external: false
 		},
 		{
+			name: 'Calendar',
+			href: '/calendar',
+			icon: 'event',
+			external: false
+		},
+		{
 			name: 'Organisers',
 			href: '/organisers',
 			icon: 'manage_accounts',

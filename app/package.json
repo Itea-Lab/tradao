@@ -32,6 +32,7 @@
 		"@humanspeak/svelte-markdown": "^2.2.0",
 		"@supabase/ssr": "^0.8.0",
 		"@supabase/supabase-js": "^2.119.0",
+		"@svar-ui/svelte-calendar": "^2.7.1",
 		"add-to-calendar-button": "^3.5.1",
 		"jsqr": "^1.4.0",
 		"ulid": "^3.0.2",
