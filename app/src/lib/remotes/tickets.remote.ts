@@ -73,7 +73,7 @@ export const getTicket = query(ticketID, async (id) => {
 		.single();
 
 	if (queryError) error(500, queryError.message);
-	if (!ticket) error(404, `Ticket with ID ${id} not found`);
+	if (!ticket) error(404, `Ticket with ID ${ticketID} not found`);
 	return ticket;
 });
 
