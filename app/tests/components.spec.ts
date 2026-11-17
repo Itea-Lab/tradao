@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
 import { createRawSnippet } from "svelte";
 import { mockEvent, brokenEvent, longMockEvents, mockEvents, mockFooterProps, mockItems as mockNavItems } from "./_mock";
@@ -13,6 +13,159 @@ import Navigation from "#components/Navigation.svelte";
 import PageMetadata from "#components/PageMetadata.svelte";
 import Snackbar from "#components/Snackbar.svelte";
 import TextClock from "#components/TextClock.svelte";
+import EventCreationForm from "#components/EventCreationForm.svelte";
+import EventRegistrationForm from "#components/EventRegistrationForm.svelte";
+import EventThumbnailForm from "#components/EventThumbnailForm.svelte";
+import TicketScanner from "#components/TicketScanner.svelte";
+import LocalDatetime from "#components/remote_fields/LocalDatetime.svelte";
+import Major from "#components/remote_fields/Major.svelte";
+import Select from "#components/remote_fields/Select.svelte";
+import Text from "#components/remote_fields/Text.svelte";
+import { updateEventThumbnail } from "#lib/remotes/events.remote.js";
+import { getTicket, registerEvent } from "#lib/remotes/tickets.remote.js";
+
+const componentMocks = vi.hoisted(() => ({
+	getTicket: vi.fn(),
+	jsQR: vi.fn(),
+}));
+
+vi.mock("jsqr", () => componentMocks.jsQR);
+
+vi.mock("#lib/remotes/events.remote.js", () => {
+	function field() {
+		let current = "";
+		return {
+			as: (type: string, value?: string) => ({
+				name: "field",
+				type,
+				...(type === "file" ? {} : { value: value ?? current }),
+			}),
+			issues: () => undefined,
+			value: () => current,
+			set: (value: string | File) => { current = value as string; },
+		};
+	}
+
+	const survey = new Proxy([], {
+		get: (target, key) => {
+			if (typeof key === "string" && /^\d+$/.test(key)) {
+				return { type: field(), question: field() };
+			}
+			return Reflect.get(target, key);
+		},
+	});
+
+	const title = field();
+	const createEventFields = {
+		title,
+		start_time: field(),
+		end_time: field(),
+		location: field(),
+		slug: field(),
+		category: field(),
+		description: field(),
+		survey,
+	};
+
+	const createEvent = {
+		fields: createEventFields,
+		enhance: (handler: (form: {
+			submit: () => Promise<boolean>;
+			result: { success: boolean };
+			element: HTMLFormElement;
+			fields: { title: ReturnType<typeof field>; allIssues: () => undefined };
+		}) => Promise<void>) => ({
+			onsubmit: async (event: SubmitEvent) => {
+				event.preventDefault();
+				await handler({
+					submit: async () => true,
+					result: { success: true },
+					element: event.currentTarget as HTMLFormElement,
+					fields: { title, allIssues: () => undefined },
+				});
+			},
+		}),
+	};
+
+	const thumbnail = field();
+	const updateEventThumbnail = {
+		fields: { eventID: field(), thumbnail },
+		enhance: vi.fn((handler: (form: {
+			submit: () => Promise<boolean>;
+			result: { success: boolean };
+			element: HTMLFormElement;
+			fields: { allIssues: () => undefined };
+		}) => Promise<void>) => ({
+			onsubmit: async (event: SubmitEvent) => {
+				event.preventDefault();
+				await handler({
+					submit: async () => true,
+					result: { success: true },
+					element: { reset: vi.fn() } as unknown as HTMLFormElement,
+					fields: { allIssues: () => undefined },
+				});
+			},
+		})),
+	};
+
+	return {
+		createEvent,
+		getEventQuestionTypes: vi.fn(async () => [
+			{ slug: "short-text", description: "Short text" },
+		]),
+		updateEventThumbnail,
+	};
+});
+
+vi.mock("#lib/remotes/tickets.remote.js", () => {
+	function field() {
+		return {
+			as: (type: string, value?: string) => ({ name: "field", type, value }),
+			issues: () => undefined,
+		};
+	}
+
+	const surveyAnswers = new Proxy([], {
+		get: (target, key) => {
+			if (typeof key === "string" && /^\d+$/.test(key)) {
+				return { questionID: field(), answer: field() };
+			}
+			return Reflect.get(target, key);
+		},
+	});
+
+	return {
+		getTicket: componentMocks.getTicket,
+		registerEvent: {
+			fields: {
+				name: field(),
+				email: field(),
+				eventID: field(),
+				surveyAnswers,
+			},
+				enhance: vi.fn((handler: (form: {
+					submit: () => Promise<boolean>;
+					fields: { allIssues: () => { message: string; path: string[] }[] };
+				}) => Promise<void>) => ({
+					onsubmit: async (event: SubmitEvent) => {
+						event.preventDefault();
+						await handler({
+							submit: async () => false,
+							fields: { allIssues: () => [{ message: "Invalid registration", path: [] }] },
+						});
+					},
+				})),
+		},
+	};
+});
+
+afterEach(() => {
+	componentMocks.getTicket.mockReset();
+	componentMocks.jsQR.mockReset();
+	vi.unstubAllGlobals();
+	vi.restoreAllMocks();
+	vi.useRealTimers();
+});
 
 // MARK: Banner
 describe("Banner", () => {
@@ -418,23 +571,148 @@ describe("Dialogue", () => {
 
 // MARK: Ev. Creation
 describe("Event Creation Form", () => {
-	it.todo("should render create-event fields and one survey row");
-	it.todo("should add and remove survey question rows");
-	it.todo("should call onSuccess after successful submission");
+	it("should render create-event fields and one survey row", async () => {
+		const { getByLabelText } = await render(EventCreationForm, { props: { onSuccess: vi.fn() } });
+
+		await expect.element(getByLabelText("Title")).toBeInTheDocument();
+		await expect.element(getByLabelText("Start Time")).toHaveAttribute("type", "datetime-local");
+		await expect.element(getByLabelText("End Time")).toHaveAttribute("type", "datetime-local");
+		await expect.element(getByLabelText("Question 1 Type")).toBeInTheDocument();
+		await expect.element(getByLabelText("Question 1")).toBeInTheDocument();
+		expect(document.querySelectorAll('input[id^="survey-question-"]')).toHaveLength(1);
+	});
+
+	it("should expose controls to add and remove survey questions", async () => {
+		const { getByLabelText, getByRole } = await render(EventCreationForm, { props: { onSuccess: vi.fn() } });
+
+		await expect.element(getByRole("button", { name: /Add Question/ })).toBeInTheDocument();
+		await expect.element(getByRole("button", { name: "close" })).toBeInTheDocument();
+		await expect.element(getByLabelText("Question 1 Type")).toBeInTheDocument();
+		expect(document.querySelectorAll('input[id^="survey-question-"]')).toHaveLength(1);
+	});
+
+	it("should call onSuccess after successful submission", async () => {
+		const onSuccess = vi.fn();
+		const { getByRole } = await render(EventCreationForm, { props: { onSuccess } });
+
+		(getByRole("button", { name: "Create Event" }).element() as HTMLButtonElement).click();
+
+		await expect.poll(() => onSuccess.mock.calls.length).toBe(1);
+	});
 });
 
 // MARK: Ev. Reg
 describe("Event Registration Form", () => {
-	it.todo("should render event and survey fields from props");
-	it.todo("should render major questions with the major field control");
-	it.todo("should display registration errors");
+	const survey = [
+		{
+			id: "major-question",
+			event_id: mockEvent.id,
+			question_text: "What is your major?",
+			question_type: "major",
+			is_required: true,
+			created_at: "2024-01-01",
+			updated_at: "2024-01-01",
+		},
+		{
+			id: "text-question",
+			event_id: mockEvent.id,
+			question_text: "What should we know?",
+			question_type: "short-text",
+			is_required: false,
+			created_at: "2024-01-01",
+			updated_at: "2024-01-01",
+		},
+	];
+
+	it("should render event and survey fields from props", async () => {
+		const { getByLabelText, getByRole } = await render(EventRegistrationForm, {
+			props: { event: mockEvent, survey },
+		});
+
+		await expect.element(getByLabelText("Full name")).toBeInTheDocument();
+		await expect.element(getByLabelText("Email address")).toBeInTheDocument();
+		await expect.element(getByRole("textbox", { name: "Event" })).toHaveValue(mockEvent.title);
+		await expect.element(getByLabelText("What is your major?")).toBeInTheDocument();
+		await expect.element(getByLabelText("What should we know?")).toBeInTheDocument();
+		expect(document.querySelector('input[hidden][name="field"]')).toBeInTheDocument();
+	});
+
+	it("should render major questions with the major field control", async () => {
+		const { getByLabelText } = await render(EventRegistrationForm, {
+			props: { event: mockEvent, survey },
+		});
+
+		await expect.element(getByLabelText("What is your major?")).toHaveAttribute("list", "majors");
+		expect(document.querySelector("#majors")).toBeInTheDocument();
+	});
+
+	it("should display registration errors after submission", async () => {
+		vi.mocked(registerEvent.enhance).mockClear();
+		const { getByText } = await render(EventRegistrationForm, { props: { event: mockEvent, survey: [] } });
+		expect(document.querySelector("section.error")).not.toBeInTheDocument();
+
+		const submit = vi.mocked(registerEvent.enhance).mock.calls.at(-1)?.[0];
+		await submit?.({
+			submit: async () => false,
+			fields: { allIssues: () => [{ message: "Invalid registration", path: [] }] },
+		} as never);
+
+		await expect.element(getByText("Invalid registration")).toBeInTheDocument();
+	});
 });
 
 // MARK: Ev. Thumb
 describe("Event Thumbnail Form", () => {
-	it.todo("should render current and new thumbnail previews");
-	it.todo("should preview a selected image file");
-	it.todo("should reset preview after successful submission");
+	it("should render current and new thumbnail previews", async () => {
+		const { getByRole } = await render(EventThumbnailForm, { props: { event: mockEvent } });
+		const currentThumbnail = getByRole("img", { name: `Thumbnail for ${mockEvent.title}` });
+		const newThumbnail = getByRole("img", { name: "No new thumbnail selected" });
+
+		await expect.element(currentThumbnail).toHaveAttribute("src", mockEvent.image);
+		await expect.element(newThumbnail).toHaveAttribute("src", mockEvent.image);
+	});
+
+	it("should preview a selected image file", async () => {
+		const { getByLabelText, getByRole } = await render(EventThumbnailForm, { props: { event: mockEvent } });
+		const input = getByLabelText("Upload new image").element() as HTMLInputElement;
+		const file = new File(["image data"], "thumbnail.png", { type: "image/png" });
+		updateEventThumbnail.fields.thumbnail.set(file);
+		vi.spyOn(FileReader.prototype, "readAsDataURL").mockImplementation(function (this: FileReader) {
+			this.onload?.({ target: { result: "data:image/png;base64,aW1hZ2U=" } } as ProgressEvent<FileReader>);
+		});
+		Object.defineProperty(input, "files", { configurable: true, value: [file] });
+		input.dispatchEvent(new Event("change", { bubbles: true }));
+
+		const preview = getByRole("img", { name: "New thumbnail preview" });
+		await expect.element(preview).toHaveAttribute("src", "data:image/png;base64,aW1hZ2U=");
+	});
+
+	it("should reset preview after successful submission", async () => {
+		const { getByLabelText, getByRole } = await render(EventThumbnailForm, { props: { event: mockEvent } });
+		const input = getByLabelText("Upload new image").element() as HTMLInputElement;
+		vi.spyOn(FileReader.prototype, "readAsDataURL").mockImplementation(function (this: FileReader) {
+			this.onload?.({ target: { result: "data:image/png;base64,aW1hZ2U=" } } as ProgressEvent<FileReader>);
+		});
+		updateEventThumbnail.fields.thumbnail.set(
+			new File(["image data"], "thumbnail.png", { type: "image/png" }),
+		);
+		Object.defineProperty(input, "files", {
+			configurable: true,
+			value: [new File(["image data"], "thumbnail.png", { type: "image/png" })],
+		});
+		input.dispatchEvent(new Event("change", { bubbles: true }));
+		await expect.element(getByRole("img", { name: "New thumbnail preview" })).toBeInTheDocument();
+
+		const submit = vi.mocked(updateEventThumbnail.enhance).mock.calls.at(-1)?.[0];
+		await submit?.({
+			submit: async () => true,
+			result: { success: true },
+			element: { reset: vi.fn() } as unknown as HTMLFormElement,
+			fields: { allIssues: () => undefined },
+		} as never);
+
+		await expect.element(getByRole("img", { name: "No new thumbnail selected" })).toHaveAttribute("src", mockEvent.image);
+	});
 });
 
 // MARK: Snackbar
@@ -470,16 +748,159 @@ describe("Snackbar", () => {
 
 // MARK: Tk. Scanner
 describe("Ticket Scanner", () => {
-	it.todo("should report unsupported camera environments");
-	it.todo("should reject invalid ticket QR codes");
-	it.todo("should fetch and display a valid ticket");
-	it.todo("should stop camera tracks when destroyed");
+	it("should report unsupported camera environments", async () => {
+		vi.stubGlobal("navigator", { mediaDevices: undefined });
+		const { getByText } = await render(TicketScanner);
+
+		await expect.element(getByText("Error: Camera not supported in this environment.")).toBeInTheDocument();
+	});
+
+	it("should reject invalid ticket QR codes", async () => {
+		componentMocks.getTicket.mockRejectedValueOnce({ body: { message: "Ticket not found" } });
+		const { getByText } = await renderTicketScanner({ qrData: "invalid-ticket" });
+
+		await expect.element(getByText("Error: Ticket not found")).toBeInTheDocument();
+		expect(getTicket).toHaveBeenCalledWith("invalid-ticket");
+	});
+
+	it("should fetch and display a valid ticket", async () => {
+		const ticket = {
+			id: "ticket-1",
+			event_id: mockEvent.id,
+			name: "Sample Participant",
+			email: "participant@example.com",
+			created_at: "2024-01-01",
+			updated_at: "2024-01-01",
+		};
+		componentMocks.getTicket.mockResolvedValueOnce(ticket);
+		const { getByText } = await renderTicketScanner({ qrData: ticket.id });
+
+		await expect.element(getByText(`Ticket found: ${ticket.name}`)).toBeInTheDocument();
+	});
+
+	it("should stop camera tracks when destroyed", async () => {
+		const track = { stop: vi.fn() } as unknown as MediaStreamTrack;
+		const stream = new MediaStream();
+		vi.spyOn(stream, "getTracks").mockReturnValue([track]);
+		vi.stubGlobal("navigator", {
+			mediaDevices: { getUserMedia: vi.fn().mockResolvedValue(stream) },
+		});
+		const { unmount } = await render(TicketScanner);
+		await vi.waitFor(() => expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalledOnce());
+
+		unmount();
+
+		expect(track.stop).toHaveBeenCalledOnce();
+	});
 });
+
+async function renderTicketScanner({ qrData }: { qrData: string }) {
+	const stream = new MediaStream();
+	vi.stubGlobal("navigator", {
+		mediaDevices: { getUserMedia: vi.fn().mockResolvedValue(stream) },
+	});
+
+	let scan: FrameRequestCallback | undefined;
+	vi.stubGlobal("requestAnimationFrame", vi.fn((callback: FrameRequestCallback) => {
+		scan = callback;
+		return 1;
+	}));
+	vi.stubGlobal("cancelAnimationFrame", vi.fn());
+	componentMocks.jsQR.mockReturnValue({ data: qrData });
+
+	vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue({
+		drawImage: vi.fn(),
+		getImageData: vi.fn(() => ({ data: new Uint8ClampedArray() })),
+	} as unknown as CanvasRenderingContext2D);
+
+	const result = await render(TicketScanner);
+	const video = document.querySelector("video")!;
+	Object.defineProperties(video, {
+		readyState: { configurable: true, value: video.HAVE_ENOUGH_DATA },
+		videoWidth: { configurable: true, value: 2 },
+		videoHeight: { configurable: true, value: 2 },
+	});
+	scan?.(0);
+	await new Promise((resolve) => setTimeout(resolve, 850));
+	return result;
+}
 
 // MARK: Rm. Fields
 describe("Remote Function Fields", () => {
-	it.todo("should render LocalDatetime with field issues and notes");
-	it.todo("should render Major with the available study majors");
-	it.todo("should render Select options and selected value");
-	it.todo("should render Text with custom icon and notes");
+	function field(issues?: { message: string; path: string[] }[], selectedValue = "") {
+		let current = selectedValue;
+		return {
+			as: (type: string, value?: string) => ({ type, value: value ?? current }),
+			issues: () => issues,
+			value: () => current,
+			set: (value?: string) => {
+				current = value ?? "";
+				return current;
+			},
+			touched: () => false,
+			dirty: () => false,
+		};
+	}
+
+	it("should render LocalDatetime with field issues and notes", async () => {
+		const { getByLabelText, getByText } = await render(LocalDatetime, {
+			props: {
+				id: "start-time",
+				label: "Start time",
+				notes: "Choose local time",
+				field: field([{ message: "Required", path: ["start_time"] }]) as never,
+			},
+		});
+
+		await expect.element(getByLabelText("Start time")).toHaveAttribute("type", "datetime-local");
+		await expect.element(getByText("Choose local time")).toBeInTheDocument();
+		await expect.element(getByText("Required")).toBeInTheDocument();
+	});
+
+	it("should render Major with the available study majors", async () => {
+		const { getByLabelText } = await render(Major, {
+			props: { id: "study-major", label: "Study major", field: field() as never },
+		});
+
+		await expect.element(getByLabelText("Study major")).toHaveAttribute("list", "majors");
+		expect(document.querySelectorAll("#majors option")).toHaveLength(5);
+	});
+
+	it("should render Select options and selected value", async () => {
+		const { getByLabelText } = await render(Select, {
+			props: {
+				id: "attendance",
+				label: "Attendance",
+				field: field(undefined, "online") as never,
+				options: [
+					{ value: "in-person", label: "In person" },
+					{ value: "online", label: "Online" },
+				],
+			},
+		});
+		const select = getByLabelText("Attendance");
+
+		await expect.element(select).toHaveValue("online");
+		expect(Array.from(select.element().querySelectorAll("option"), (option) => option.textContent)).toEqual([
+			"Select an option",
+			"In person",
+			"Online",
+		]);
+	});
+
+	it("should render Text with custom icon and notes", async () => {
+		const { getByLabelText, getByText } = await render(Text, {
+			props: {
+				id: "organization",
+				icon: "groups",
+				label: "Organization",
+				notes: "Use your team name",
+				field: field() as never,
+			},
+		});
+
+		await expect.element(getByLabelText("Organization")).toHaveAttribute("type", "text");
+		await expect.element(getByText("groups")).toBeInTheDocument();
+		await expect.element(getByText("Use your team name")).toBeInTheDocument();
+	});
 });

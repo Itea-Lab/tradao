@@ -17,7 +17,22 @@
 	const { name, email, eventID, surveyAnswers } = registerEvent.fields;
 </script>
 
-<form {...registerEvent}>
+<form
+	{...registerEvent.enhance(async (form) => {
+		isRegistering = true;
+		errors = [];
+		try {
+			if (!(await form.submit())) {
+				const issues = form.fields.allIssues()?.map((issue) => issue.message) ?? [];
+				errors = issues.length > 0 ? issues : ["Registration failed."];
+			}
+		} catch (error) {
+			errors = [error instanceof Error ? error.message : String(error)];
+		} finally {
+			isRegistering = false;
+		}
+	})}
+>
 	<h5 class="small">Contact information</h5>
 
 	<RemoteFields.Text id="ff-name" icon="badge" label="Full name" field={name} />
