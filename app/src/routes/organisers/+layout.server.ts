@@ -1,12 +1,10 @@
-import { redirect } from "@sveltejs/kit";
+import { error, redirect } from "@sveltejs/kit";
 import type { LayoutServerLoad } from "./$types";
 
-export const load: LayoutServerLoad = async (
-	{ locals: { safeGetSession }, url },
-) => {
-	const { user } = await safeGetSession();
-	if (user) return { user };
+export const load: LayoutServerLoad = async ({ locals: { supabase }, url }) => {
+	const { data: claimsData, error: claimsError } = await supabase.auth.getClaims();
+	if (claimsError) error(claimsError.status || 500, claimsError.message);
+	if (claimsData?.claims) return { claims: claimsData.claims };
 
-	const redirectUrl = encodeURIComponent(url.pathname + url.search);
-	redirect(303, `/login?redirectTo=${redirectUrl}`,);
+	redirect(303, `/login?redirectTo=${encodeURIComponent(url.pathname + url.search)}`,);
 };

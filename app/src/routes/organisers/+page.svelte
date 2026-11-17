@@ -8,7 +8,7 @@
 	import type { PageData } from "./$types";
 
 	let { data }: { data: PageData } = $props();
-	let username = $derived(data.user?.email ?? "User");
+	let username = $derived(data.claims.email ?? "User");
 
 	async function handleLogout() {
 		try {

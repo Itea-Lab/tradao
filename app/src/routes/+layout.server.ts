@@ -1,6 +1,7 @@
 import type { LayoutServerLoad } from './$types';
 
-export const load: LayoutServerLoad = async ({ locals: { safeGetSession } }) => {
-	const { user } = await safeGetSession();
-	return { user };
+export const load: LayoutServerLoad = async ({ cookies }) => {
+	return {
+		cookies: cookies.getAll(),
+	};
 };
