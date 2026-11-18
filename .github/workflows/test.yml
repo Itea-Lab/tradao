@@ -44,8 +44,8 @@ jobs:
         run: npm run test:unit -- --run
         env:
           IS_CI: true
-          VITE_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          VITE_SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
 
       - name: Cache SonarQube packages
         uses: actions/cache@v6
