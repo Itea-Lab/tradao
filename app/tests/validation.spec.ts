@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from "vitest";
 import { eventID, participantName, participantEmail, thumbnail, eventCreationSchema, loginSchema } from "#lib/validation.js";
-import { ValidationError } from 'yup';
+import { ValidationError } from "yup";
 
 describe('event ID and ticket ID', () => {
 	it.each([

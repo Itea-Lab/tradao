@@ -1,30 +1,30 @@
-import * as yup from 'yup';
+import { string, mixed, array, object } from "yup";
 
-export const eventID = yup.string()
+export const eventID = string()
 	.trim().required('Event ID is required')
 	.uuid('Event ID must be a valid UUID');
 
-export const ticketID = yup.string()
+export const ticketID = string()
 	.trim().required('Ticket ID is required')
 	.uuid('Ticket ID must be a valid UUID');
 
 /** Accommodate datetime-local HTML input format */
-export const localDateTime = yup.string()
+export const localDateTime = string()
 	.trim().required()
 	.matches(
 		/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/,
 		({ value }) => `${value} is not a valid date-time`
 	);
 
-export const participantName = yup.string()
+export const participantName = string()
 	.trim().required('Name is required')
 	.matches(/^[\p{L}\s-]+$/u, 'Name must contain only letters, spaces, and hyphens');
 
-export const participantEmail = yup.string()
+export const participantEmail = string()
 	.trim().required('Email is required')
 	.email();
 
-export const thumbnail = yup.mixed<File>()
+export const thumbnail = mixed<File>()
 	.default(new File([], "", { type: "image/jpeg" }))
 	.test('file', 'Image file must be a file', (value) => value instanceof File)
 	.test('size', 'File must be 5 MB or smaller', (value) =>
@@ -34,37 +34,34 @@ export const thumbnail = yup.mixed<File>()
 		value instanceof File ? value.type.startsWith('image/') : true
 	);
 
-export const loginSchema = yup.object({
-	email: yup.string()
+export const loginSchema = object({
+	email: string()
 		.email("Email must be a valid email address")
 		.trim().required('Email is required'),
 
-	_password: yup.string()
+	_password: string()
 		.min(6, "Password must be at least 6 characters")
 		.trim().required('Password is required'),
 });
 
-export const eventRegistrationSchema = yup.object({
+export const eventRegistrationSchema = object({
 	eventID: eventID,
 	name: participantName,
 	email: participantEmail,
 
 	// Survey Answers
-	surveyAnswers: yup
-		.array()
-		.default([])
-		.of(
-			yup.object({
-				questionID: yup.string().uuid().required('Question ID is required'),
-				answer: yup.string().required('Answer is required'),
-			}).required()
-		),
+	surveyAnswers: array().default([]).of(
+		object({
+			questionID: string().uuid().required('Question ID is required'),
+			answer: string().required('Answer is required'),
+		}).required()
+	),
 });
 
 /**
  * Yup validation schema for event thumbnail upload form.
  */
-export const eventThumbnailSchema = yup.object({
+export const eventThumbnailSchema = object({
 	eventID: eventID,
 	thumbnail: thumbnail,
 });
@@ -72,42 +69,31 @@ export const eventThumbnailSchema = yup.object({
 /**
  * Yup validation schema for event creation form.
  */
-export const eventCreationSchema = yup.object({
-	title: yup.string()
-		.trim()
-		.required('Event title is required'),
+export const eventCreationSchema = object({
+	title: string().trim().required('Event title is required'),
 
 	start_time: localDateTime,
 	end_time: localDateTime,
 
-	location: yup.string()
-		.default('A35 Bach Dang, Tan Binh Ward, Ho Chi Minh City, Vietnam'),
+	location: string().default('A35 Bach Dang, Tan Binh Ward, Ho Chi Minh City, Vietnam'),
 
-	category: yup.string()
+	category: string()
 		.trim()
 		.required('Event category is required'),
 
-	description: yup.string()
-		.trim()
-		.default(''),
+	description: string().trim().default(''),
 
-	slug: yup.string()
-		.trim(),
+	slug: string().trim(),
 
-	survey: yup.array().of(
-		yup.object({
-			question: yup.string()
-				.trim().required('Survey question is required'),
+	survey: array().of(
+		object({
+			question: string().trim().required('Survey question is required'),
 
-			type: yup
-				.string()
+			type: string()
 				.oneOf(["text", "select", "boolean", "number", "date", "file"])
 				.required('Survey question type is required'),
 
-			options: yup.array().of(
-				yup.string()
-					.trim().required('Option text is required')
-			)
+			options: array().of(string().trim().required('Option text is required'))
 		})
 	).default([])
 });
