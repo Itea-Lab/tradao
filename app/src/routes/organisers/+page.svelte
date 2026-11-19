@@ -1,14 +1,16 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
-	import { logout } from "#lib/remotes/auth.remote.js";
+	import { getProfile, logout } from "#lib/remotes/auth.remote.js";
+	import type { Tables } from "#lib/models.js";
 	import { showSnackbar } from "#lib/utils.js";
 
 	import PageMetadata from "#components/PageMetadata.svelte";
 	import Banner from "#components/Banner.svelte";
 	import type { PageData } from "./$types";
+	import { onMount } from "svelte";
 
+	let profile = $state<Tables<"profiles"> | null>(null);
 	let { data }: { data: PageData } = $props();
-	let username = $derived(data.claims.email ?? "User");
 
 	async function handleLogout() {
 		try {
@@ -21,6 +23,14 @@
 			showSnackbar("Logout failed. Please try again.", "error");
 		}
 	}
+
+	onMount(async () => {
+		profile = await getProfile(data.claims.sub).catch((e) => {
+			showSnackbar(e, "error");
+			console.error(e);
+			return null;
+		});
+	});
 </script>
 
 <PageMetadata
@@ -30,7 +40,7 @@
 />
 
 <Banner
-	title="Organiser Dashboard"
+	title={`Welcome, ${profile ? profile.display_name : data.claims.email}!`}
 	description="Manage events from creation to ticketing and check-in."
 />
 
@@ -38,7 +48,6 @@
 	<hr class="bottom-margin" />
 
 	<p class="center-align">
-		You are signed in as {username}.
 		<button onclick={handleLogout}>Sign out</button>
 	</p>
 

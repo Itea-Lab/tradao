@@ -1,7 +1,24 @@
-import { invalid } from "@sveltejs/kit";
-import { command, form, getRequestEvent } from "$app/server";
+import { string } from "yup";
+import { error, invalid } from "@sveltejs/kit";
+import { command, form, getRequestEvent, query } from "$app/server";
 
 import { loginSchema } from "#lib/validation.js";
+
+export const getProfile = query(string().required().uuid(), async (id) => {
+	const { locals } = getRequestEvent();
+
+	const { data: profile, error: queryError } = await locals.supabase
+		.from("profiles")
+		.select("*")
+		.eq("id", id)
+		.limit(1)
+		.single();
+
+	if (queryError) error(500, queryError.message);
+	if (!profile) error(404, "Profile not found");
+
+	return profile;
+});
 
 export const login = form(loginSchema, async ({ email, _password }) => {
 	const { locals } = getRequestEvent();
