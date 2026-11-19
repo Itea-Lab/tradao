@@ -24,7 +24,7 @@ export const getEventQuestionTypes = query(async () => {
 
 	if (queryError) error(500, `Failed to fetch question types: ${queryError.message}`);
 	return questionTypes;
-})
+});
 
 /**
  * Remote function to query all events
@@ -38,7 +38,7 @@ export const getEvents = query(async () => {
 
 	if (queryError) error(500, queryError.message);
 	return events;
-})
+});
 
 /**
  * Remote function to create an event on the frontend.
@@ -48,34 +48,55 @@ export const getEvents = query(async () => {
 export const createEvent = form(eventCreationSchema, async (form, issue) => {
 	const sb = getRequestEvent().locals.supabase;
 
-	const { data: { user }, error: userError } = await sb.auth.getUser();
-	if (!user || userError) return { success: false, message: 'You must log in to create an event.' };
+	const {
+		data: { user },
+		error: userError,
+	} = await sb.auth.getUser();
+	if (!user || userError)
+		return { success: false, message: "You must log in to create an event." };
 
 	// Validate end_time is after start_time
 	if (new Date(form.end_time) <= new Date(form.start_time)) {
-		invalid(issue.end_time('End time must be after start time'))
+		invalid(issue.end_time("End time must be after start time"));
 	}
 
 	const organiser_id = getOrganiserID();
 
 	// Upload event data
-	const { data: event, error: eventError } = await sb.from("community_events")
-		.insert([{ ...form, organiser_id, }])
-		.select().single();
+	const { data: event, error: eventError } = await sb
+		.from("community_events")
+		.insert([{ ...form, organiser_id }])
+		.select()
+		.single();
 
-	if (eventError) return { success: false, message: `Failed to create event: ${eventError.message}` };
-	if (!event) return { success: false, message: 'Cannot identify the created event. Please contact support.' };
+	if (eventError)
+		return {
+			success: false,
+			message: `Failed to create event: ${eventError.message}`,
+		};
+	if (!event)
+		return {
+			success: false,
+			message: "Cannot identify the created event. Please contact support.",
+		};
 
 	// Upload survey questions
-	const { error: surveyError } = await sb.from("registration_questions").insert(
-		form.survey.map((q) => ({
-			event_id: event.id,
-			question_type: q.type,
-			question_text: q.question,
-		}))
-	).select();
+	const { error: surveyError } = await sb
+		.from("registration_questions")
+		.insert(
+			form.survey.map((q) => ({
+				event_id: event.id,
+				question_type: q.type,
+				question_text: q.question,
+			})),
+		)
+		.select();
 
-	if (surveyError) return { success: false, message: `Failed to create survey questions: ${surveyError.message}` };
+	if (surveyError)
+		return {
+			success: false,
+			message: `Failed to create survey questions: ${surveyError.message}`,
+		};
 	return { success: true, message: `Event created successfully: ${event.title}` };
 });
 
@@ -86,62 +107,96 @@ export const createEvent = form(eventCreationSchema, async (form, issue) => {
  * and updates the event with the new thumbnail URL.
  * Successful update will return a success message.
  */
-export const updateEventThumbnail = form(eventThumbnailSchema, async ({ eventID, thumbnail }) => {
-	const sb = getRequestEvent().locals.supabase;
+export const updateEventThumbnail = form(
+	eventThumbnailSchema,
+	async ({ eventID, thumbnail }) => {
+		const sb = getRequestEvent().locals.supabase;
 
-	const { data: { user }, error: userError } = await sb.auth.getUser();
-	if (!user || userError) return { success: false, message: 'You must log in to update an event thumbnail.' };
+		const {
+			data: { user },
+			error: userError,
+		} = await sb.auth.getUser();
+		if (!user || userError)
+			return {
+				success: false,
+				message: "You must log in to update an event thumbnail.",
+			};
 
-	// Skip empty thumbnail uploads (no changes)
-	if (thumbnail.size === 0) return { success: false, message: 'No changes' };
+		// Skip empty thumbnail uploads (no changes)
+		if (thumbnail.size === 0) return { success: false, message: "No changes" };
 
-	// Explicitly convert File to ArrayBuffer
-	const fileBuffer = await thumbnail.arrayBuffer();
+		// Explicitly convert File to ArrayBuffer
+		const fileBuffer = await thumbnail.arrayBuffer();
 
-	console.log('Thumbnail upload debug:', {
-		name: thumbnail.name,
-		size: thumbnail.size,
-		bufferSize: fileBuffer.byteLength,
-		type: thumbnail.type
-	});
+		console.log("Thumbnail upload debug:", {
+			name: thumbnail.name,
+			size: thumbnail.size,
+			bufferSize: fileBuffer.byteLength,
+			type: thumbnail.type,
+		});
 
-	if (fileBuffer.byteLength === 0) return { success: false, message: 'Thumbnail file is empty.' };
+		if (fileBuffer.byteLength === 0)
+			return { success: false, message: "Thumbnail file is empty." };
 
-	// Upload thumbnail file to storage bucket
-	const path = `event_thumbnails/${eventID}.${thumbnail.name.split(".").pop()}`;
-	const { error: uploadError } = await sb.storage.from("assets")
-		.upload(path, fileBuffer, { upsert: true, contentType: thumbnail.type || 'image/jpeg' });
+		// Upload thumbnail file to storage bucket
+		const path = `event_thumbnails/${eventID}.${thumbnail.name.split(".").pop()}`;
+		const { error: uploadError } = await sb.storage
+			.from("assets")
+			.upload(path, fileBuffer, {
+				upsert: true,
+				contentType: thumbnail.type || "image/jpeg",
+			});
 
-	if (uploadError) {
-		console.error('Supabase upload error:', uploadError);
-		return { success: false, message: `Failed to upload event thumbnail: ${uploadError.message}` };
-	}
+		if (uploadError) {
+			console.error("Supabase upload error:", uploadError);
+			return {
+				success: false,
+				message: `Failed to upload event thumbnail: ${uploadError.message}`,
+			};
+		}
 
-	// Get the public URL of the uploaded thumbnail
-	const { data: { publicUrl } } = sb.storage.from("assets").getPublicUrl(path);
+		// Get the public URL of the uploaded thumbnail
+		const {
+			data: { publicUrl },
+		} = sb.storage.from("assets").getPublicUrl(path);
 
-	// Update the event with the new thumbnail URL
-	const { error: updateError } = await sb.from("community_events")
-		.update({ image: publicUrl })
-		.eq("id", eventID);
+		// Update the event with the new thumbnail URL
+		const { error: updateError } = await sb
+			.from("community_events")
+			.update({ image: publicUrl })
+			.eq("id", eventID);
 
-	if (updateError) {
-		console.error('Database update error:', updateError);
-		return { success: false, message: `Failed to update event thumbnail: ${updateError.message}` };
-	}
+		if (updateError) {
+			console.error("Database update error:", updateError);
+			return {
+				success: false,
+				message: `Failed to update event thumbnail: ${updateError.message}`,
+			};
+		}
 
-	return { success: true, message: `Event thumbnail updated successfully.` };
-})
+		return { success: true, message: `Event thumbnail updated successfully.` };
+	},
+);
 
 export const deleteEvent = command(eventID, async (eventID) => {
 	const sb = getRequestEvent().locals.supabase;
 
-	const { data: { user }, error: userError } = await sb.auth.getUser();
-	if (!user || userError) return { success: false, message: 'You must log in to delete an event.' };
+	const {
+		data: { user },
+		error: userError,
+	} = await sb.auth.getUser();
+	if (!user || userError)
+		return { success: false, message: "You must log in to delete an event." };
 
-	const { error: deleteError } = await sb.from("community_events").delete()
+	const { error: deleteError } = await sb
+		.from("community_events")
+		.delete()
 		.eq("id", eventID);
 
-	if (deleteError) return { success: false, message: `Failed to delete event: ${deleteError.message}` };
+	if (deleteError)
+		return {
+			success: false,
+			message: `Failed to delete event: ${deleteError.message}`,
+		};
 	return { success: true, message: `Event deleted successfully.` };
 });

@@ -45,7 +45,8 @@ export const getEventTickets = query(eventID, async (eventID) => {
  */
 export const getDetailedTicket = query(ticketID, async (ticketID) => {
 	const sb = getRequestEvent().locals.supabase;
-	const { data: ticket, error: ticketError } = await sb.from("event_tickets")
+	const { data: ticket, error: ticketError } = await sb
+		.from("event_tickets")
 		.select(`
 			*,
 			survey: registration_answers (*),
@@ -82,7 +83,8 @@ export const getTicket = query(ticketID, async (id) => {
  */
 export const getTicketsCount = query.batch(eventID, async (eventIDs) => {
 	const sb = getRequestEvent().locals.supabase;
-	const { data: events, error: queryError } = await sb.from("community_events")
+	const { data: events, error: queryError } = await sb
+		.from("community_events")
 		.select("id, tickets: event_tickets(count)")
 		.in("id", eventIDs);
 
@@ -103,32 +105,42 @@ export const getTicketsCount = query.batch(eventID, async (eventIDs) => {
  * and stores the survey answers in the "registration_answers" table.
  * Successful registration will redirect the user to the ticket page.
  */
-export const registerEvent = form(eventRegistrationSchema, async ({ eventID, name, email, surveyAnswers }) => {
-	// All users can register events i.e. anon
-	const sb = getRequestEvent().locals.supabase;
+export const registerEvent = form(
+	eventRegistrationSchema,
+	async ({ eventID, name, email, surveyAnswers }) => {
+		// All users can register events i.e. anon
+		const sb = getRequestEvent().locals.supabase;
 
-	// Upload the base ticket
-	const { data: ticket, error: ticketError } = await sb.from("event_tickets")
-		.insert([{ event_id: eventID, name, email }])
-		.select().single();
+		// Upload the base ticket
+		const { data: ticket, error: ticketError } = await sb
+			.from("event_tickets")
+			.insert([{ event_id: eventID, name, email }])
+			.select()
+			.single();
 
-	if (ticketError) error(500, `Failed to create ticket: ${ticketError.message}`);
-	if (!ticket) error(500, 'Cannot identify the created ticket. Please contact support.');
+		if (ticketError) error(500, `Failed to create ticket: ${ticketError.message}`);
+		if (!ticket)
+			error(500, "Cannot identify the created ticket. Please contact support.");
 
-	// Upload the survey answers
-	if (!surveyAnswers || surveyAnswers.length === 0) {
-		// No survey answers provided, skip this step
+		// Upload the survey answers
+		if (!surveyAnswers || surveyAnswers.length === 0) {
+			// No survey answers provided, skip this step
+			redirect(303, `/tickets/${ticket.id}`);
+		}
+
+		const { error: surveyError } = await sb
+			.from("registration_answers")
+			.insert(
+				surveyAnswers.map((answer) => ({
+					ticket_id: ticket.id,
+					question_id: answer.questionID,
+					answer_text: answer.answer,
+				})),
+			)
+			.select();
+
+		if (surveyError)
+			error(500, `Failed to create survey answers: ${surveyError.message}`);
 		redirect(303, `/tickets/${ticket.id}`);
-	}
-
-	const { error: surveyError } = await sb.from("registration_answers").insert(
-		surveyAnswers.map((answer) => ({
-			ticket_id: ticket.id,
-			question_id: answer.questionID,
-			answer_text: answer.answer,
-		}))
-	).select();
-
-	if (surveyError) error(500, `Failed to create survey answers: ${surveyError.message}`);
-	redirect(303, `/tickets/${ticket.id}`);
-});
+	},
+);

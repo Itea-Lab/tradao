@@ -13,7 +13,7 @@ export const mockEvents: Tables<"community_events">[] = [
 		category: "Workshop",
 		created_at: "2024-01-01",
 		updated_at: "2024-01-01",
-		slug: "mock_event_title_1"
+		slug: "mock_event_title_1",
 	},
 	{
 		id: "mock_id_2",
@@ -27,15 +27,19 @@ export const mockEvents: Tables<"community_events">[] = [
 		category: "Seminar",
 		created_at: "2024-02-01",
 		updated_at: "2024-02-01",
-		slug: "mock_event_title_2"
+		slug: "mock_event_title_2",
 	},
 ];
 
 export const mockEvent = mockEvents[0];
 
 export const brokenEvent = {
-	...mockEvent, image: "", title: "",
-	start_time: "", end_time: "", location: "",
+	...mockEvent,
+	image: "",
+	title: "",
+	start_time: "",
+	end_time: "",
+	location: "",
 };
 
 // make a long array containing 12 copies of mockEvents[0] to test pagination
@@ -49,24 +53,24 @@ export const mockFooterProps = {
 		{ name: "Home", href: "/" },
 		{ name: "About", href: "/about" },
 		{ name: "Services", href: "/services" },
-		{ name: "Contact", href: "/contact" }
+		{ name: "Contact", href: "/contact" },
 	],
 	community: [
 		{ icon: "blog", name: "Blog", href: "/blog" },
 		{ icon: "forum", name: "Forum", href: "/forum" },
 		{ icon: "events", name: "Events", href: "/events" },
-		{ icon: "support", name: "Support", href: "/support" }
+		{ icon: "support", name: "Support", href: "/support" },
 	],
 	contact: {
 		email: "info@itealab.com",
 		address: "123 Main St, Anytown, USA",
 		website: "https://www.itealab.com",
-	}
+	},
 };
 
 export const mockItems = [
 	{ name: "Home", href: "/", icon: "home", external: false },
 	{ name: "About", href: "/about", icon: "info", external: false },
 	{ name: "Services", href: "/services", icon: "services", external: false },
-	{ name: "Contact", href: "/contact", icon: "contact", external: false }
+	{ name: "Contact", href: "/contact", icon: "contact", external: false },
 ];

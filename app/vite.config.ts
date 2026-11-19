@@ -1,19 +1,21 @@
 import adapter from "@sveltejs/adapter-cloudflare";
 import { defineConfig } from "vitest/config";
 import { sveltekit } from "@sveltejs/kit/vite";
-import { webdriverio } from "@vitest/browser-webdriverio"
+import { webdriverio } from "@vitest/browser-webdriverio";
 import { vitePreprocess } from "@sveltejs/vite-plugin-svelte";
 
 // Detect if running in CI environment such as GitHub Actions
 const isCI = process.env.CI === "true";
 
 export default defineConfig({
-	plugins: [sveltekit({
-		adapter: adapter(),
-		preprocess: [vitePreprocess()],
-		experimental: { remoteFunctions: true },
-		compilerOptions: { experimental: { async: true } },
-	})],
+	plugins: [
+		sveltekit({
+			adapter: adapter(),
+			preprocess: [vitePreprocess()],
+			experimental: { remoteFunctions: true },
+			compilerOptions: { experimental: { async: true } },
+		}),
+	],
 	test: {
 		browser: {
 			enabled: true,
@@ -29,10 +31,10 @@ export default defineConfig({
 			// Ensure consistent lcov coverage reports generation
 			// for SonarCloud scanning in CI environments.
 			reportOnFailure: true,
-			reporter: ["text", "json", "html", "lcov"]
+			reporter: ["text", "json", "html", "lcov"],
 		},
 		css: {
-			modules: { classNameStrategy: "non-scoped" }
+			modules: { classNameStrategy: "non-scoped" },
 		},
 		expect: { requireAssertions: true },
 		environment: "node",

@@ -18,10 +18,10 @@ export default {
 		tmrEnd.setHours(23, 59, 59, 999);
 
 		const { data: events } = await supabase
-			.from('community_events')
-			.select('*, event_tickets(email)')
-			.gte('start_time', tmrStart.toISOString())
-			.lte('start_time', tmrEnd.toISOString());
+			.from("community_events")
+			.select("*, event_tickets(email)")
+			.gte("start_time", tmrStart.toISOString())
+			.lte("start_time", tmrEnd.toISOString());
 
 		// 1b. If no events, exit early
 		if (!events || events.length === 0) {
@@ -36,7 +36,9 @@ export default {
 		}
 
 		// 2. Construct email notification
-		const bccs = events.flatMap(event => event.event_tickets.map(ticket => ticket.email));
+		const bccs = events.flatMap((event) =>
+			event.event_tickets.map((ticket) => ticket.email),
+		);
 		const eventData = events[0];
 		const emailContent = await EventReminder.compile(eventData);
 
@@ -56,7 +58,7 @@ export default {
 		// 4. Send email
 		console.log(`- Sending from ${env.MAIL_FROM_NAME} <${env.MAIL_FROM_EMAIL}>`);
 		console.log(`- Sending to ${env.MAIL_TO_EMAIL}`);
-		console.log(`- BCC: ${bccs.join(', ')}`);
+		console.log(`- BCC: ${bccs.join(", ")}`);
 		await mailer.send({
 			from: { name: env.MAIL_FROM_NAME, email: env.MAIL_FROM_EMAIL },
 			to: env.MAIL_TO_EMAIL,

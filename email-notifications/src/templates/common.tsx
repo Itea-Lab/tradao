@@ -8,7 +8,7 @@ export const colours = {
 	/** AccentDark color */ ad: "#103228",
 	/** Foreground color */ fg: "#153448",
 	/** Background color */ bg: "#e6fff2",
-}
+};
 
 /**
  * Email document head
@@ -22,7 +22,8 @@ export const EmailHead = (props: { subject: string }) => (
 			webFont={{
 				url: "https://fonts.gstatic.com/s/roboto/v27/KFOmCnqEu92Fr1Mu4mxKKTU1Kg.woff2",
 				format: "woff2",
-			}} />
+			}}
+		/>
 	</Head>
 );
 
@@ -33,7 +34,9 @@ export const LogoHeader = () => (
 	<Row className={`w-auto mx-auto mt-[1rem] p-[1rem] rounded-lg`}>
 		<Column align="right">
 			<Img
-				width={129.25} height={64} alt="ITea Lab Logo"
+				width={129.25}
+				height={64}
+				alt="ITea Lab Logo"
 				src="https://tradao.turitoyuenan.workers.dev/logos/logo-lab.png"
 			/>
 		</Column>
@@ -43,7 +46,9 @@ export const LogoHeader = () => (
 
 		<Column align="left">
 			<Img
-				width={201.75} height={64} alt="Tradao Logo"
+				width={201.75}
+				height={64}
+				alt="Tradao Logo"
 				src="https://tradao.turitoyuenan.workers.dev/logos/logo.png"
 			/>
 		</Column>

@@ -1,7 +1,17 @@
 import {
-	Body, Container, Html, Img, Markdown, pixelBasedPreset,
-	pretty, Preview, render, Tailwind, Text, toPlainText
-} from "react-email"
+	Body,
+	Container,
+	Html,
+	Img,
+	Markdown,
+	pixelBasedPreset,
+	pretty,
+	Preview,
+	render,
+	Tailwind,
+	Text,
+	toPlainText,
+} from "react-email";
 import { colours, EmailHead, EventData, formatDateTime, LogoHeader } from "./common";
 
 /**
@@ -17,28 +27,33 @@ export const EventReminder = (props: EventData) => (
 				<LogoHeader />
 				<LetterCard {...props} />
 				<Text className="max-w-md mx-auto text-center">
-					Reach out via <a href="mailto:contact.itealab@gmail.com">contact.itealab@gmail.com</a>
-					<br />if you have any questions or need assistance
+					Reach out via{" "}
+					<a href="mailto:contact.itealab@gmail.com">
+						contact.itealab@gmail.com
+					</a>
+					<br />
+					if you have any questions or need assistance
 				</Text>
 			</Body>
 		</Tailwind>
 	</Html>
-)
+);
 
 /** Subject line */
-EventReminder.Subject = (props: EventData) =>
-	`${props.title} Starts Tomorrow!`;
+EventReminder.Subject = (props: EventData) => `${props.title} Starts Tomorrow!`;
 
 /** The main card that contains the event image and details. */
 const LetterCard = (props: EventData) => (
 	<Container
-		className={`mx-auto my-[1rem] bg-[${colours.bg}] border-3 border-[${colours.fg}] rounded-[1rem]`}>
+		className={`mx-auto my-[1rem] bg-[${colours.bg}] border-3 border-[${colours.fg}] rounded-[1rem]`}
+	>
 		<Img
 			width="100%"
 			height="auto"
 			className="rounded-[1rem]"
 			src={props.image}
-			alt={props.title} />
+			alt={props.title}
+		/>
 
 		<Markdown markdownContainerStyles={{ padding: "1rem" }}>
 			{MarkdownBody(props)}
@@ -48,7 +63,7 @@ const LetterCard = (props: EventData) => (
 
 /** Email letter in Markdown */
 const MarkdownBody = (props: EventData) =>
-`
+	`
 Dear esteemed attendees,
 
 Thank you for registering to participate in our upcoming event,
@@ -74,7 +89,7 @@ We look forward to seeing you there!
 Best regards,
 
 The ITea Lab Team
-`
+`;
 
 /** Preview props */
 EventReminder.PreviewProps = {
@@ -82,10 +97,12 @@ EventReminder.PreviewProps = {
 	organiser_id: "organiser-1",
 	title: "Fictional Software Testing Workshop",
 	category: "Workshop",
-	description: "Learn about metamorphic testing, proportional testing strategies, mutation testing, and their applications.",
+	description:
+		"Learn about metamorphic testing, proportional testing strategies, mutation testing, and their applications.",
 	start_time: "2026-07-01T01:00:00Z",
 	end_time: "2026-07-01T03:00:00Z",
-	location: "Brighton Beach Auditorium, Level 13, A35 Bach Dang, Ho Chi Minh City, Vietnam",
+	location:
+		"Brighton Beach Auditorium, Level 13, A35 Bach Dang, Ho Chi Minh City, Vietnam",
 	image: "https://placehold.co/1600x900",
 	created_at: "2026-03-20T12:00:00Z",
 	updated_at: "2026-03-23T12:00:00Z",
@@ -94,8 +111,8 @@ EventReminder.PreviewProps = {
 /** Compile into email content */
 EventReminder.compile = async function (props: EventData) {
 	return await render(<EventReminder {...props} />)
-		.then(html => pretty(html))
-		.then(html => ({ html, text: toPlainText(html), }));
-}
+		.then((html) => pretty(html))
+		.then((html) => ({ html, text: toPlainText(html) }));
+};
 
 export default EventReminder;

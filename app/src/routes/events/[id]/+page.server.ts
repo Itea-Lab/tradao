@@ -1,13 +1,12 @@
 import { error } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 
-export const load: PageServerLoad = async (
-	{ params, locals: { supabase } },
-) => {
+export const load: PageServerLoad = async ({ params, locals: { supabase } }) => {
 	const identifier = params.id;
 
 	// UUID v4 regex
-	const uuidV4 = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+	const uuidV4 =
+		/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 	const isUuid = uuidV4.test(identifier);
 
 	const query = supabase

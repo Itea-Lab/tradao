@@ -16,4 +16,4 @@ export const RemoteFields = {
 
 	/** Generic text question */
 	Text,
-}
+};

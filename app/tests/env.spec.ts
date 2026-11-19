@@ -12,14 +12,12 @@ describe("environment variables", () => {
 			});
 		});
 
-		it.each([
-			undefined,
-			"",
-			"not-a-url",
-			"https://example.com",
-		])("rejects an invalid URL: %s", (value) => {
-			expect(validate(value)).toHaveProperty("issues");
-		});
+		it.each([undefined, "", "not-a-url", "https://example.com"])(
+			"rejects an invalid URL: %s",
+			(value) => {
+				expect(validate(value)).toHaveProperty("issues");
+			},
+		);
 	});
 
 	describe("SUPABASE_KEY", () => {
@@ -32,11 +30,7 @@ describe("environment variables", () => {
 			});
 		});
 
-		it.each([
-			undefined,
-			"",
-			"invalid-key",
-		])("rejects an invalid key: %s", (value) => {
+		it.each([undefined, "", "invalid-key"])("rejects an invalid key: %s", (value) => {
 			expect(validate(value)).toHaveProperty("issues");
 		});
 	});

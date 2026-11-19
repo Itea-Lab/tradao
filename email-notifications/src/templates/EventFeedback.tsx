@@ -11,11 +11,10 @@ export const EventFeedback = (props: EventData) => (
 	<Html>
 		<EmailHead subject={EventFeedback.Subject(props)} />
 		<Tailwind config={{ presets: [pixelBasedPreset] }}>
-			<Body className={`px-[1.5rem] font-sans text-[${colours.fg}]`}>
-			</Body>
+			<Body className={`px-[1.5rem] font-sans text-[${colours.fg}]`}></Body>
 		</Tailwind>
 	</Html>
-)
+);
 
 EventFeedback.Subject = (props: EventData) =>
 	`How was ${props.title}? We value your feedback!`;

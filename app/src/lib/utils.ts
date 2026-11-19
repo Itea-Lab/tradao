@@ -11,14 +11,14 @@ type SnackbarIcon = "check" | "error" | "info" | "warning";
 export function showSnackbar(
 	message: string,
 	icon: SnackbarIcon = "info",
-	duration = 5000
+	duration = 5000,
 ) {
 	if (typeof window === "undefined") return;
 
 	window.dispatchEvent(
 		new CustomEvent("app-snackbar", {
-			detail: { message, icon, duration }
-		})
+			detail: { message, icon, duration },
+		}),
 	);
 }
 
@@ -37,17 +37,23 @@ export function serialiseDate(date: Date | string): string {
  * @param opts Optional Intl.DateTimeFormatOptions to customize the output format
  * @returns Formatted date string in (default) "dd MMM yyyy, HH:mm" format
  */
-export function formatDate(date: string | Date, opts?: Intl.DateTimeFormatOptions): string {
-	return new Date(date).toLocaleString('en-AU', (opts || {
-		year: 'numeric',
-		month: 'short',
-		day: '2-digit',
-		hour: '2-digit',
-		minute: '2-digit',
-		hour12: false,
-		timeZone: 'Antarctica/Davis', // UTC+7
-		timeZoneName: 'short',
-	}));
+export function formatDate(
+	date: string | Date,
+	opts?: Intl.DateTimeFormatOptions,
+): string {
+	return new Date(date).toLocaleString(
+		"en-AU",
+		opts || {
+			year: "numeric",
+			month: "short",
+			day: "2-digit",
+			hour: "2-digit",
+			minute: "2-digit",
+			hour12: false,
+			timeZone: "Antarctica/Davis", // UTC+7
+			timeZoneName: "short",
+		},
+	);
 }
 
 /**
@@ -74,8 +80,8 @@ export function search<T>(array: T[], query: string, keys: (keyof T)[]): T[] {
 	return array.filter((item) =>
 		keys.some((key) => {
 			const value = item[key];
-			return typeof value === 'string' && value.toLowerCase().includes(lowerQuery);
-		})
+			return typeof value === "string" && value.toLowerCase().includes(lowerQuery);
+		}),
 	);
 }
 

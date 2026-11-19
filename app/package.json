@@ -8,6 +8,7 @@
 		"build": "vite build",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
+		"format": "npx oxfmt",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"test:unit": "vitest",
@@ -15,7 +16,7 @@
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-cloudflare": "^8.0.3",
-		"@sveltejs/kit": "^3.3.1",
+		"@sveltejs/kit": "^3.4.0",
 		"@sveltejs/vite-plugin-svelte": "^7.3.1",
 		"@vitest/browser-webdriverio": "^5.0.0",
 		"@vitest/coverage-v8": "^5",
@@ -26,12 +27,12 @@
 		"vitest": "^5",
 		"vitest-browser-svelte": "^3.1.0",
 		"webdriverio": "^9.33.1",
-		"wrangler": "^4.164.0"
+		"wrangler": "^4.165.0"
 	},
 	"dependencies": {
 		"@humanspeak/svelte-markdown": "^2.3.0",
 		"@supabase/ssr": "^0.12.7",
-		"@supabase/supabase-js": "^2.119.1",
+		"@supabase/supabase-js": "^2.119.2",
 		"@svar-ui/svelte-calendar": "^2.7.1",
 		"add-to-calendar-button": "^3.6.2",
 		"jsqr": "^1.4.0",

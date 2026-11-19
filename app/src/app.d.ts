@@ -1,8 +1,8 @@
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces
 
-import type { JwtPayload, Session, SupabaseClient, User } from '@supabase/supabase-js';
-import type { Database } from '#lib/models.js';
+import type { JwtPayload, Session, SupabaseClient, User } from "@supabase/supabase-js";
+import type { Database } from "#lib/models.js";
 
 declare global {
 	/** BeerCSS: Change UI mode i.e. light/dark/auto */

@@ -6,5 +6,5 @@ export const load: LayoutServerLoad = async ({ locals: { supabase }, url }) => {
 	if (claimsError) error(claimsError.status || 500, claimsError.message);
 	if (claimsData?.claims) return { claims: claimsData.claims };
 
-	redirect(303, `/login?redirectTo=${encodeURIComponent(url.pathname + url.search)}`,);
+	redirect(303, `/login?redirectTo=${encodeURIComponent(url.pathname + url.search)}`);
 };

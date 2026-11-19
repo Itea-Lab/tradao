@@ -1,7 +1,14 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
 import { createRawSnippet } from "svelte";
-import { mockEvent, brokenEvent, longMockEvents, mockEvents, mockFooterProps, mockItems as mockNavItems } from "./_mock";
+import {
+	mockEvent,
+	brokenEvent,
+	longMockEvents,
+	mockEvents,
+	mockFooterProps,
+	mockItems as mockNavItems,
+} from "./_mock";
 
 import Banner from "#components/Banner.svelte";
 import Dialogue from "#components/Dialogue.svelte";
@@ -42,7 +49,9 @@ vi.mock("#lib/remotes/events.remote.js", () => {
 			}),
 			issues: () => undefined,
 			value: () => current,
-			set: (value: string | File) => { current = value as string; },
+			set: (value: string | File) => {
+				current = value as string;
+			},
 		};
 	}
 
@@ -69,12 +78,14 @@ vi.mock("#lib/remotes/events.remote.js", () => {
 
 	const createEvent = {
 		fields: createEventFields,
-		enhance: (handler: (form: {
-			submit: () => Promise<boolean>;
-			result: { success: boolean };
-			element: HTMLFormElement;
-			fields: { title: ReturnType<typeof field>; allIssues: () => undefined };
-		}) => Promise<void>) => ({
+		enhance: (
+			handler: (form: {
+				submit: () => Promise<boolean>;
+				result: { success: boolean };
+				element: HTMLFormElement;
+				fields: { title: ReturnType<typeof field>; allIssues: () => undefined };
+			}) => Promise<void>,
+		) => ({
 			onsubmit: async (event: SubmitEvent) => {
 				event.preventDefault();
 				await handler({
@@ -90,22 +101,26 @@ vi.mock("#lib/remotes/events.remote.js", () => {
 	const thumbnail = field();
 	const updateEventThumbnail = {
 		fields: { eventID: field(), thumbnail },
-		enhance: vi.fn((handler: (form: {
-			submit: () => Promise<boolean>;
-			result: { success: boolean };
-			element: HTMLFormElement;
-			fields: { allIssues: () => undefined };
-		}) => Promise<void>) => ({
-			onsubmit: async (event: SubmitEvent) => {
-				event.preventDefault();
-				await handler({
-					submit: async () => true,
-					result: { success: true },
-					element: { reset: vi.fn() } as unknown as HTMLFormElement,
-					fields: { allIssues: () => undefined },
-				});
-			},
-		})),
+		enhance: vi.fn(
+			(
+				handler: (form: {
+					submit: () => Promise<boolean>;
+					result: { success: boolean };
+					element: HTMLFormElement;
+					fields: { allIssues: () => undefined };
+				}) => Promise<void>,
+			) => ({
+				onsubmit: async (event: SubmitEvent) => {
+					event.preventDefault();
+					await handler({
+						submit: async () => true,
+						result: { success: true },
+						element: { reset: vi.fn() } as unknown as HTMLFormElement,
+						fields: { allIssues: () => undefined },
+					});
+				},
+			}),
+		),
 	};
 
 	return {
@@ -143,18 +158,28 @@ vi.mock("#lib/remotes/tickets.remote.js", () => {
 				eventID: field(),
 				surveyAnswers,
 			},
-				enhance: vi.fn((handler: (form: {
-					submit: () => Promise<boolean>;
-					fields: { allIssues: () => { message: string; path: string[] }[] };
-				}) => Promise<void>) => ({
+			enhance: vi.fn(
+				(
+					handler: (form: {
+						submit: () => Promise<boolean>;
+						fields: {
+							allIssues: () => { message: string; path: string[] }[];
+						};
+					}) => Promise<void>,
+				) => ({
 					onsubmit: async (event: SubmitEvent) => {
 						event.preventDefault();
 						await handler({
 							submit: async () => false,
-							fields: { allIssues: () => [{ message: "Invalid registration", path: [] }] },
+							fields: {
+								allIssues: () => [
+									{ message: "Invalid registration", path: [] },
+								],
+							},
 						});
 					},
-				})),
+				}),
+			),
 		},
 	};
 });
@@ -172,8 +197,9 @@ describe("Banner", () => {
 	it("should render h1", async () => {
 		const { getByRole } = await render(Banner, {
 			props: {
-				title: "Sample Banner Title", description: "Sample banner description"
-			}
+				title: "Sample Banner Title",
+				description: "Sample banner description",
+			},
 		});
 
 		const heading = getByRole("heading", { level: 1 });
@@ -185,8 +211,8 @@ describe("Banner", () => {
 		const { getByRole } = await render(Banner, {
 			props: {
 				title: "Sample Banner Title",
-				description: "Sample banner description"
-			}
+				description: "Sample banner description",
+			},
 		});
 
 		const description = getByRole("paragraph");
@@ -195,7 +221,7 @@ describe("Banner", () => {
 
 	it("should not render description if not provided", async () => {
 		const { getByRole } = await render(Banner, {
-			props: { title: "Sample Banner Title" }
+			props: { title: "Sample Banner Title" },
 		});
 
 		expect(document.querySelector("header p")).not.toBeInTheDocument();
@@ -205,9 +231,7 @@ describe("Banner", () => {
 // MARK: Ev. Card
 describe("Event Card", () => {
 	it("should render h2", async () => {
-		const {
-			getByRole
-		} = await render(EventCard, { props: { event: mockEvent } });
+		const { getByRole } = await render(EventCard, { props: { event: mockEvent } });
 
 		const heading = getByRole("heading", { level: 2 });
 		await expect.element(heading).toBeInTheDocument();
@@ -215,9 +239,9 @@ describe("Event Card", () => {
 	});
 
 	it("should cope with missing data", async () => {
-		const {
-			getByRole, getByTestId
-		} = await render(EventCard, { props: { event: brokenEvent } });
+		const { getByRole, getByTestId } = await render(EventCard, {
+			props: { event: brokenEvent },
+		});
 
 		const image = getByRole("img");
 		await expect.element(image).toBeInTheDocument();
@@ -241,7 +265,9 @@ describe("Event Card", () => {
 // MARK: Ev. Feed
 describe("Events Feed", () => {
 	it("should render search tools correctly", async () => {
-		const { getByTestId } = await render(EventsFeed, { props: { events: mockEvents } });
+		const { getByTestId } = await render(EventsFeed, {
+			props: { events: mockEvents },
+		});
 
 		// Expect a <search> grid-based region
 		const search = getByTestId("events-search");
@@ -250,7 +276,9 @@ describe("Events Feed", () => {
 	});
 
 	it("should implement searching correctly", async () => {
-		const { getByRole, getByTestId, getByText } = await render(EventsFeed, { props: { events: mockEvents } });
+		const { getByRole, getByTestId, getByText } = await render(EventsFeed, {
+			props: { events: mockEvents },
+		});
 
 		// Expect an <input> tag for searching
 		const searchInput = getByTestId("search-input");
@@ -261,7 +289,9 @@ describe("Events Feed", () => {
 		searchElement.value = "Title 1";
 		searchElement.dispatchEvent(new Event("input", { bubbles: true }));
 		await expect.element(searchInput).toHaveValue("Title 1");
-		await expect.element(getByRole("heading", { level: 2 })).toHaveTextContent("Mock Event Title 1");
+		await expect
+			.element(getByRole("heading", { level: 2 }))
+			.toHaveTextContent("Mock Event Title 1");
 
 		searchElement.value = "Nonexistent";
 		searchElement.dispatchEvent(new Event("input", { bubbles: true }));
@@ -270,7 +300,9 @@ describe("Events Feed", () => {
 	});
 
 	it("should implement category filtering correctly", async () => {
-		const { getByRole, getByTestId } = await render(EventsFeed, { props: { events: mockEvents } });
+		const { getByRole, getByTestId } = await render(EventsFeed, {
+			props: { events: mockEvents },
+		});
 
 		// Expect a <select> tag for category filtering
 		const categorySelect = getByTestId("category-select");
@@ -281,16 +313,22 @@ describe("Events Feed", () => {
 		categoryElement.value = "Workshop";
 		categoryElement.dispatchEvent(new Event("change", { bubbles: true }));
 		await expect.element(categorySelect).toHaveValue("Workshop");
-		await expect.element(getByRole("heading", { level: 2 })).toHaveTextContent("Mock Event Title 1");
+		await expect
+			.element(getByRole("heading", { level: 2 }))
+			.toHaveTextContent("Mock Event Title 1");
 
 		categoryElement.value = "Seminar";
 		categoryElement.dispatchEvent(new Event("change", { bubbles: true }));
 		await expect.element(categorySelect).toHaveValue("Seminar");
-		await expect.element(getByRole("heading", { level: 2 })).toHaveTextContent("Mock Event Title 2");
+		await expect
+			.element(getByRole("heading", { level: 2 }))
+			.toHaveTextContent("Mock Event Title 2");
 	});
 
 	it("should implement pagination correctly", async () => {
-		const { getByRole, getByTestId } = await render(EventsFeed, { props: { events: longMockEvents } });
+		const { getByRole, getByTestId } = await render(EventsFeed, {
+			props: { events: longMockEvents },
+		});
 
 		// Expect pagination <nav class="center-align">
 		const pagination = getByRole("navigation");
@@ -333,13 +371,17 @@ describe("Footer", () => {
 		expect(logoLinks).toHaveLength(2);
 		expect(Array.from(logoLinks, (link) => link.getAttribute("href"))).toEqual([
 			"https://itealab.vercel.app",
-			"/"
+			"/",
 		]);
-		expect(Array.from(footer.querySelectorAll("#logos img"), (image) => image.getAttribute("src"))).toEqual([
+		expect(
+			Array.from(footer.querySelectorAll("#logos img"), (image) =>
+				image.getAttribute("src"),
+			),
+		).toEqual([
 			"/logos/logo-lab.svg",
 			"/logos/logo-lab_dark.svg",
 			"/logos/logo.svg",
-			"/logos/logo_dark.svg"
+			"/logos/logo_dark.svg",
 		]);
 	});
 
@@ -348,7 +390,7 @@ describe("Footer", () => {
 		const footer = getByRole("contentinfo").element();
 
 		expect(footer.querySelector(".large-text")).toHaveTextContent(
-			"A product of ITea Lab, brought to you by Minh-Triet et al."
+			"A product of ITea Lab, brought to you by Minh-Triet et al.",
 		);
 	});
 
@@ -356,16 +398,18 @@ describe("Footer", () => {
 		const { getByRole } = await render(Footer, { props: mockFooterProps });
 		const footer = getByRole("contentinfo").element();
 
-		expect(footer.querySelector(`a[href="${mockFooterProps.contact.website}"]`)).toHaveTextContent(
-			mockFooterProps.contact.website
+		expect(
+			footer.querySelector(`a[href="${mockFooterProps.contact.website}"]`),
+		).toHaveTextContent(mockFooterProps.contact.website);
+		expect(
+			footer.querySelector(`a[href="mailto:${mockFooterProps.contact.email}"]`),
+		).toHaveTextContent(mockFooterProps.contact.email);
+		expect(footer.querySelector("#address--text")).toHaveTextContent(
+			mockFooterProps.contact.address,
 		);
-		expect(footer.querySelector(`a[href="mailto:${mockFooterProps.contact.email}"]`)).toHaveTextContent(
-			mockFooterProps.contact.email
-		);
-		expect(footer.querySelector("#address--text")).toHaveTextContent(mockFooterProps.contact.address);
 		expect(footer.querySelector("#address--text")).toHaveAttribute(
 			"href",
-			`https://maps.google.com/?q=${encodeURIComponent(mockFooterProps.contact.address)}`
+			`https://maps.google.com/?q=${encodeURIComponent(mockFooterProps.contact.address)}`,
 		);
 	});
 
@@ -427,7 +471,7 @@ describe("Login Form", () => {
 		(toggleButton.element() as HTMLButtonElement).click();
 		await expect.element(toggleButton).toHaveAttribute("aria-label", "Show password");
 		await expect.element(passwordInput).toHaveAttribute("type", "password");
-	})
+	});
 });
 
 // MARK: Navigation
@@ -440,7 +484,9 @@ describe("Navigation", () => {
 	});
 
 	it("should display the navigation links", async () => {
-		const { getByTestId } = await render(Navigation, { props: { menuItems: mockNavItems } });
+		const { getByTestId } = await render(Navigation, {
+			props: { menuItems: mockNavItems },
+		});
 
 		await expect.element(getByTestId("navigation-top")).toBeInTheDocument();
 		await expect.element(getByTestId("navigation-menu")).toBeInTheDocument();
@@ -455,10 +501,17 @@ describe("Navigation", () => {
 
 	it("should render external links with target and rel attributes", async () => {
 		const externalItems = [
-			{ name: "External Link", href: "https://example.com", icon: "external", external: true }
+			{
+				name: "External Link",
+				href: "https://example.com",
+				icon: "external",
+				external: true,
+			},
 		];
 
-		const { getByTestId } = await render(Navigation, { props: { menuItems: externalItems } });
+		const { getByTestId } = await render(Navigation, {
+			props: { menuItems: externalItems },
+		});
 
 		const link = getByTestId("external-t0");
 		await expect.element(link).toBeInTheDocument();
@@ -476,14 +529,17 @@ describe("Metadata", () => {
 				title: "Test Title",
 				description: "Test description for the page.",
 				keywords: "test, page, metadata",
-			}
+			},
 		});
 
 		expect(document.title).toBe(`Test Title | Tradao by ITea Lab™`);
 
 		const metaDescription = document.querySelector('meta[name="description"]');
 		expect(metaDescription).toBeInTheDocument();
-		expect(metaDescription).toHaveAttribute("content", "Test description for the page.");
+		expect(metaDescription).toHaveAttribute(
+			"content",
+			"Test description for the page.",
+		);
 
 		const metaKeywords = document.querySelector('meta[name="keywords"]');
 		expect(metaKeywords).toBeInTheDocument();
@@ -543,8 +599,12 @@ describe("Text Clock", () => {
 // Dialogue
 describe("Dialogue", () => {
 	it("should render children inside an open dialog", async () => {
-		const children = createRawSnippet(() => ({ render: () => "<p>Dialog content</p>" }));
-		const { getByRole, getByText } = await render(Dialogue, { props: { children, onClose: vi.fn() } });
+		const children = createRawSnippet(() => ({
+			render: () => "<p>Dialog content</p>",
+		}));
+		const { getByRole, getByText } = await render(Dialogue, {
+			props: { children, onClose: vi.fn() },
+		});
 
 		await expect.element(getByRole("dialog")).toHaveAttribute("open");
 		await expect.element(getByText("Dialog content")).toBeInTheDocument();
@@ -552,7 +612,9 @@ describe("Dialogue", () => {
 
 	it("should call onClose when Escape is pressed", async () => {
 		const onClose = vi.fn();
-		const children = createRawSnippet(() => ({ render: () => "<p>Dialog content</p>" }));
+		const children = createRawSnippet(() => ({
+			render: () => "<p>Dialog content</p>",
+		}));
 		await render(Dialogue, { props: { children, onClose } });
 
 		// Pressing Esc trigger onClose
@@ -572,30 +634,46 @@ describe("Dialogue", () => {
 // MARK: Ev. Creation
 describe("Event Creation Form", () => {
 	it("should render create-event fields and one survey row", async () => {
-		const { getByLabelText } = await render(EventCreationForm, { props: { onSuccess: vi.fn() } });
+		const { getByLabelText } = await render(EventCreationForm, {
+			props: { onSuccess: vi.fn() },
+		});
 
 		await expect.element(getByLabelText("Title")).toBeInTheDocument();
-		await expect.element(getByLabelText("Start Time")).toHaveAttribute("type", "datetime-local");
-		await expect.element(getByLabelText("End Time")).toHaveAttribute("type", "datetime-local");
+		await expect
+			.element(getByLabelText("Start Time"))
+			.toHaveAttribute("type", "datetime-local");
+		await expect
+			.element(getByLabelText("End Time"))
+			.toHaveAttribute("type", "datetime-local");
 		await expect.element(getByLabelText("Question 1 Type")).toBeInTheDocument();
 		await expect.element(getByLabelText("Question 1")).toBeInTheDocument();
-		expect(document.querySelectorAll('input[id^="survey-question-"]')).toHaveLength(1);
+		expect(document.querySelectorAll('input[id^="survey-question-"]')).toHaveLength(
+			1,
+		);
 	});
 
 	it("should expose controls to add and remove survey questions", async () => {
-		const { getByLabelText, getByRole } = await render(EventCreationForm, { props: { onSuccess: vi.fn() } });
+		const { getByLabelText, getByRole } = await render(EventCreationForm, {
+			props: { onSuccess: vi.fn() },
+		});
 
-		await expect.element(getByRole("button", { name: /Add Question/ })).toBeInTheDocument();
+		await expect
+			.element(getByRole("button", { name: /Add Question/ }))
+			.toBeInTheDocument();
 		await expect.element(getByRole("button", { name: "close" })).toBeInTheDocument();
 		await expect.element(getByLabelText("Question 1 Type")).toBeInTheDocument();
-		expect(document.querySelectorAll('input[id^="survey-question-"]')).toHaveLength(1);
+		expect(document.querySelectorAll('input[id^="survey-question-"]')).toHaveLength(
+			1,
+		);
 	});
 
 	it("should call onSuccess after successful submission", async () => {
 		const onSuccess = vi.fn();
 		const { getByRole } = await render(EventCreationForm, { props: { onSuccess } });
 
-		(getByRole("button", { name: "Create Event" }).element() as HTMLButtonElement).click();
+		(
+			getByRole("button", { name: "Create Event" }).element() as HTMLButtonElement
+		).click();
 
 		await expect.poll(() => onSuccess.mock.calls.length).toBe(1);
 	});
@@ -631,7 +709,9 @@ describe("Event Registration Form", () => {
 
 		await expect.element(getByLabelText("Full name")).toBeInTheDocument();
 		await expect.element(getByLabelText("Email address")).toBeInTheDocument();
-		await expect.element(getByRole("textbox", { name: "Event" })).toHaveValue(mockEvent.title);
+		await expect
+			.element(getByRole("textbox", { name: "Event" }))
+			.toHaveValue(mockEvent.title);
 		await expect.element(getByLabelText("What is your major?")).toBeInTheDocument();
 		await expect.element(getByLabelText("What should we know?")).toBeInTheDocument();
 		expect(document.querySelector('input[hidden][name="field"]')).toBeInTheDocument();
@@ -642,13 +722,17 @@ describe("Event Registration Form", () => {
 			props: { event: mockEvent, survey },
 		});
 
-		await expect.element(getByLabelText("What is your major?")).toHaveAttribute("list", "majors");
+		await expect
+			.element(getByLabelText("What is your major?"))
+			.toHaveAttribute("list", "majors");
 		expect(document.querySelector("#majors")).toBeInTheDocument();
 	});
 
 	it("should display registration errors after submission", async () => {
 		vi.mocked(registerEvent.enhance).mockClear();
-		const { getByText } = await render(EventRegistrationForm, { props: { event: mockEvent, survey: [] } });
+		const { getByText } = await render(EventRegistrationForm, {
+			props: { event: mockEvent, survey: [] },
+		});
 		expect(document.querySelector("section.error")).not.toBeInTheDocument();
 
 		const submit = vi.mocked(registerEvent.enhance).mock.calls.at(-1)?.[0];
@@ -664,8 +748,12 @@ describe("Event Registration Form", () => {
 // MARK: Ev. Thumb
 describe("Event Thumbnail Form", () => {
 	it("should render current and new thumbnail previews", async () => {
-		const { getByRole } = await render(EventThumbnailForm, { props: { event: mockEvent } });
-		const currentThumbnail = getByRole("img", { name: `Thumbnail for ${mockEvent.title}` });
+		const { getByRole } = await render(EventThumbnailForm, {
+			props: { event: mockEvent },
+		});
+		const currentThumbnail = getByRole("img", {
+			name: `Thumbnail for ${mockEvent.title}`,
+		});
 		const newThumbnail = getByRole("img", { name: "No new thumbnail selected" });
 
 		await expect.element(currentThumbnail).toHaveAttribute("src", mockEvent.image);
@@ -673,25 +761,39 @@ describe("Event Thumbnail Form", () => {
 	});
 
 	it("should preview a selected image file", async () => {
-		const { getByLabelText, getByRole } = await render(EventThumbnailForm, { props: { event: mockEvent } });
+		const { getByLabelText, getByRole } = await render(EventThumbnailForm, {
+			props: { event: mockEvent },
+		});
 		const input = getByLabelText("Upload new image").element() as HTMLInputElement;
 		const file = new File(["image data"], "thumbnail.png", { type: "image/png" });
 		updateEventThumbnail.fields.thumbnail.set(file);
-		vi.spyOn(FileReader.prototype, "readAsDataURL").mockImplementation(function (this: FileReader) {
-			this.onload?.({ target: { result: "data:image/png;base64,aW1hZ2U=" } } as ProgressEvent<FileReader>);
+		vi.spyOn(FileReader.prototype, "readAsDataURL").mockImplementation(function (
+			this: FileReader,
+		) {
+			this.onload?.({
+				target: { result: "data:image/png;base64,aW1hZ2U=" },
+			} as ProgressEvent<FileReader>);
 		});
 		Object.defineProperty(input, "files", { configurable: true, value: [file] });
 		input.dispatchEvent(new Event("change", { bubbles: true }));
 
 		const preview = getByRole("img", { name: "New thumbnail preview" });
-		await expect.element(preview).toHaveAttribute("src", "data:image/png;base64,aW1hZ2U=");
+		await expect
+			.element(preview)
+			.toHaveAttribute("src", "data:image/png;base64,aW1hZ2U=");
 	});
 
 	it("should reset preview after successful submission", async () => {
-		const { getByLabelText, getByRole } = await render(EventThumbnailForm, { props: { event: mockEvent } });
+		const { getByLabelText, getByRole } = await render(EventThumbnailForm, {
+			props: { event: mockEvent },
+		});
 		const input = getByLabelText("Upload new image").element() as HTMLInputElement;
-		vi.spyOn(FileReader.prototype, "readAsDataURL").mockImplementation(function (this: FileReader) {
-			this.onload?.({ target: { result: "data:image/png;base64,aW1hZ2U=" } } as ProgressEvent<FileReader>);
+		vi.spyOn(FileReader.prototype, "readAsDataURL").mockImplementation(function (
+			this: FileReader,
+		) {
+			this.onload?.({
+				target: { result: "data:image/png;base64,aW1hZ2U=" },
+			} as ProgressEvent<FileReader>);
 		});
 		updateEventThumbnail.fields.thumbnail.set(
 			new File(["image data"], "thumbnail.png", { type: "image/png" }),
@@ -701,7 +803,9 @@ describe("Event Thumbnail Form", () => {
 			value: [new File(["image data"], "thumbnail.png", { type: "image/png" })],
 		});
 		input.dispatchEvent(new Event("change", { bubbles: true }));
-		await expect.element(getByRole("img", { name: "New thumbnail preview" })).toBeInTheDocument();
+		await expect
+			.element(getByRole("img", { name: "New thumbnail preview" }))
+			.toBeInTheDocument();
 
 		const submit = vi.mocked(updateEventThumbnail.enhance).mock.calls.at(-1)?.[0];
 		await submit?.({
@@ -711,7 +815,9 @@ describe("Event Thumbnail Form", () => {
 			fields: { allIssues: () => undefined },
 		} as never);
 
-		await expect.element(getByRole("img", { name: "No new thumbnail selected" })).toHaveAttribute("src", mockEvent.image);
+		await expect
+			.element(getByRole("img", { name: "No new thumbnail selected" }))
+			.toHaveAttribute("src", mockEvent.image);
 	});
 });
 
@@ -720,20 +826,29 @@ describe("Snackbar", () => {
 	it.each([
 		{ icon: "info", className: "primary active" },
 		{ icon: "error", className: "error active" },
-	])("should display $icon app-snackbar events with message and icon", async ({ icon, className }) => {
-		vi.stubGlobal("ui", vi.fn());
-		const { getByRole } = await render(Snackbar);
+	])(
+		"should display $icon app-snackbar events with message and icon",
+		async ({ icon, className }) => {
+			vi.stubGlobal("ui", vi.fn());
+			const { getByRole } = await render(Snackbar);
 
-		window.dispatchEvent(new CustomEvent("app-snackbar", {
-			detail: { message: "Saved successfully", icon, duration: 5000 }
-		}));
+			window.dispatchEvent(
+				new CustomEvent("app-snackbar", {
+					detail: { message: "Saved successfully", icon, duration: 5000 },
+				}),
+			);
 
-		const snackbar = getByRole("status");
-		await expect.element(snackbar.element().querySelector("span")!).toHaveTextContent("Saved successfully");
-		await expect.element(snackbar).toHaveClass(className);
-		await expect.element(snackbar.element().querySelector("i")!).toHaveTextContent(icon);
-		vi.unstubAllGlobals();
-	});
+			const snackbar = getByRole("status");
+			await expect
+				.element(snackbar.element().querySelector("span")!)
+				.toHaveTextContent("Saved successfully");
+			await expect.element(snackbar).toHaveClass(className);
+			await expect
+				.element(snackbar.element().querySelector("i")!)
+				.toHaveTextContent(icon);
+			vi.unstubAllGlobals();
+		},
+	);
 
 	it("should remove its event listener when destroyed", async () => {
 		const removeEventListener = vi.spyOn(window, "removeEventListener");
@@ -741,7 +856,10 @@ describe("Snackbar", () => {
 
 		unmount();
 
-		expect(removeEventListener).toHaveBeenCalledWith("app-snackbar", expect.any(Function));
+		expect(removeEventListener).toHaveBeenCalledWith(
+			"app-snackbar",
+			expect.any(Function),
+		);
 		removeEventListener.mockRestore();
 	});
 });
@@ -752,11 +870,15 @@ describe("Ticket Scanner", () => {
 		vi.stubGlobal("navigator", { mediaDevices: undefined });
 		const { getByText } = await render(TicketScanner);
 
-		await expect.element(getByText("Error: Camera not supported in this environment.")).toBeInTheDocument();
+		await expect
+			.element(getByText("Error: Camera not supported in this environment."))
+			.toBeInTheDocument();
 	});
 
 	it("should reject invalid ticket QR codes", async () => {
-		componentMocks.getTicket.mockRejectedValueOnce({ body: { message: "Ticket not found" } });
+		componentMocks.getTicket.mockRejectedValueOnce({
+			body: { message: "Ticket not found" },
+		});
 		const { getByText } = await renderTicketScanner({ qrData: "invalid-ticket" });
 
 		await expect.element(getByText("Error: Ticket not found")).toBeInTheDocument();
@@ -775,7 +897,9 @@ describe("Ticket Scanner", () => {
 		componentMocks.getTicket.mockResolvedValueOnce(ticket);
 		const { getByText } = await renderTicketScanner({ qrData: ticket.id });
 
-		await expect.element(getByText(`Ticket found: ${ticket.name}`)).toBeInTheDocument();
+		await expect
+			.element(getByText(`Ticket found: ${ticket.name}`))
+			.toBeInTheDocument();
 	});
 
 	it("should stop camera tracks when destroyed", async () => {
@@ -786,7 +910,9 @@ describe("Ticket Scanner", () => {
 			mediaDevices: { getUserMedia: vi.fn().mockResolvedValue(stream) },
 		});
 		const { unmount } = await render(TicketScanner);
-		await vi.waitFor(() => expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalledOnce());
+		await vi.waitFor(() =>
+			expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalledOnce(),
+		);
 
 		unmount();
 
@@ -801,10 +927,13 @@ async function renderTicketScanner({ qrData }: { qrData: string }) {
 	});
 
 	let scan: FrameRequestCallback | undefined;
-	vi.stubGlobal("requestAnimationFrame", vi.fn((callback: FrameRequestCallback) => {
-		scan = callback;
-		return 1;
-	}));
+	vi.stubGlobal(
+		"requestAnimationFrame",
+		vi.fn((callback: FrameRequestCallback) => {
+			scan = callback;
+			return 1;
+		}),
+	);
 	vi.stubGlobal("cancelAnimationFrame", vi.fn());
 	componentMocks.jsQR.mockReturnValue({ data: qrData });
 
@@ -852,7 +981,9 @@ describe("Remote Function Fields", () => {
 			},
 		});
 
-		await expect.element(getByLabelText("Start time")).toHaveAttribute("type", "datetime-local");
+		await expect
+			.element(getByLabelText("Start time"))
+			.toHaveAttribute("type", "datetime-local");
 		await expect.element(getByText("Choose local time")).toBeInTheDocument();
 		await expect.element(getByText("Required")).toBeInTheDocument();
 	});
@@ -862,7 +993,9 @@ describe("Remote Function Fields", () => {
 			props: { id: "study-major", label: "Study major", field: field() as never },
 		});
 
-		await expect.element(getByLabelText("Study major")).toHaveAttribute("list", "majors");
+		await expect
+			.element(getByLabelText("Study major"))
+			.toHaveAttribute("list", "majors");
 		expect(document.querySelectorAll("#majors option")).toHaveLength(5);
 	});
 
@@ -881,11 +1014,12 @@ describe("Remote Function Fields", () => {
 		const select = getByLabelText("Attendance");
 
 		await expect.element(select).toHaveValue("online");
-		expect(Array.from(select.element().querySelectorAll("option"), (option) => option.textContent)).toEqual([
-			"Select an option",
-			"In person",
-			"Online",
-		]);
+		expect(
+			Array.from(
+				select.element().querySelectorAll("option"),
+				(option) => option.textContent,
+			),
+		).toEqual(["Select an option", "In person", "Online"]);
 	});
 
 	it("should render Text with custom icon and notes", async () => {
@@ -899,7 +1033,9 @@ describe("Remote Function Fields", () => {
 			},
 		});
 
-		await expect.element(getByLabelText("Organization")).toHaveAttribute("type", "text");
+		await expect
+			.element(getByLabelText("Organization"))
+			.toHaveAttribute("type", "text");
 		await expect.element(getByText("groups")).toBeInTheDocument();
 		await expect.element(getByText("Use your team name")).toBeInTheDocument();
 	});

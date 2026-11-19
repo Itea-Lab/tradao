@@ -7,10 +7,11 @@
 		"deploy": "wrangler deploy --strict --minify --secrets-file .env",
 		"dev": "wrangler dev --test-scheduled",
 		"start": "wrangler dev --test-scheduled",
+		"format": "npx oxfmt",
 		"cf-typegen": "wrangler types"
 	},
 	"dependencies": {
-		"@supabase/supabase-js": "^2.119.1",
+		"@supabase/supabase-js": "^2.119.2",
 		"react": "^19.3.1",
 		"react-dom": "^19.3.1",
 		"react-email": "^6.11.16",
@@ -21,6 +22,6 @@
 		"@types/node": "^26.6.6",
 		"@types/react": "^19.3.0",
 		"typescript": "^7.0.2",
-		"wrangler": "^4.164.0"
+		"wrangler": "^4.165.0"
 	}
 }
