@@ -1,17 +1,7 @@
 import { command, form, getRequestEvent, query } from "$app/server";
 import { eventCreationSchema, eventID, eventThumbnailSchema } from "#lib/validation.js";
+import { inferOrganiserID } from "./auth.remote";
 import { error, invalid } from "@sveltejs/kit";
-
-/**
- * Infer the Event Organiser ID from the authenticated user.
- *
- * TODO:
- * Create the `user_profiles` table linked to `event_organisers`,
- * then infer organiser ID from the user profile.
- */
-function getOrganiserID(): string {
-	return "fd6131ea-d7e0-474b-8ec0-f982d0a69dc8"; // ITea Lab Organiser
-}
 
 /**
  * Remote function to query all survey question types
@@ -60,7 +50,7 @@ export const createEvent = form(eventCreationSchema, async (form, issue) => {
 		invalid(issue.end_time("End time must be after start time"));
 	}
 
-	const organiser_id = getOrganiserID();
+	const organiser_id = await inferOrganiserID();
 
 	// Upload event data
 	const { data: event, error: eventError } = await sb
@@ -156,14 +146,12 @@ export const updateEventThumbnail = form(
 		}
 
 		// Get the public URL of the uploaded thumbnail
-		const {
-			data: { publicUrl },
-		} = sb.storage.from("assets").getPublicUrl(path);
+		const { data } = sb.storage.from("assets").getPublicUrl(path);
 
 		// Update the event with the new thumbnail URL
 		const { error: updateError } = await sb
 			.from("community_events")
-			.update({ image: publicUrl })
+			.update({ image: data.publicUrl })
 			.eq("id", eventID);
 
 		if (updateError) {

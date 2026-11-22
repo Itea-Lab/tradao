@@ -4,10 +4,25 @@ import { command, form, getRequestEvent, query } from "$app/server";
 
 import { loginSchema } from "#lib/validation.js";
 
-export const getProfile = query(string().required().uuid(), async (id) => {
-	const { locals } = getRequestEvent();
+export const inferOrganiserID = query(async () => {
+	const sb = getRequestEvent().locals.supabase;
 
-	const { data: profile, error: queryError } = await locals.supabase
+	const {
+		data: { user },
+		error: userError,
+	} = await sb.auth.getUser();
+
+	if (userError) error(userError.status || 500, userError.message);
+	if (!user) error(404, "User not found");
+
+	const profile = await getProfile(user.id)
+	return profile.organiser_id;
+});
+
+export const getProfile = query(string().required().uuid(), async (id) => {
+	const sb = getRequestEvent().locals.supabase;
+
+	const { data: profile, error: queryError } = await sb
 		.from("profiles")
 		.select("*")
 		.eq("id", id)
@@ -21,9 +36,9 @@ export const getProfile = query(string().required().uuid(), async (id) => {
 });
 
 export const login = form(loginSchema, async ({ email, _password }) => {
-	const { locals } = getRequestEvent();
+	const sb = getRequestEvent().locals.supabase;
 
-	const { error: signInError } = await locals.supabase.auth.signInWithPassword({
+	const { error: signInError } = await sb.auth.signInWithPassword({
 		email,
 		password: _password,
 	});
@@ -40,9 +55,9 @@ export const login = form(loginSchema, async ({ email, _password }) => {
 });
 
 export const logout = command(async () => {
-	const { locals } = getRequestEvent();
+	const sb = getRequestEvent().locals.supabase;
 
-	const { error: signOutError } = await locals.supabase.auth.signOut({
+	const { error: signOutError } = await sb.auth.signOut({
 		scope: "local",
 	});
 
