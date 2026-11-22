@@ -19,7 +19,7 @@ export default defineConfig({
 	test: {
 		browser: {
 			enabled: true,
-			instances: [{ browser: isCI ? "chrome" : "edge", headless: true }],
+			instances: [{ browser: isCI ? "chrome" : "edge", headless: isCI }],
 			provider: webdriverio(),
 		},
 		coverage: {
@@ -37,7 +37,7 @@ export default defineConfig({
 			modules: { classNameStrategy: "non-scoped" },
 		},
 		expect: { requireAssertions: true },
-		environment: "node",
+		environment: "happy-dom",
 		include: ["tests/**/*.spec.ts"],
 	},
 });
