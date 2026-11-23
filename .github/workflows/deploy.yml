@@ -1,21 +1,26 @@
 # https://developers.cloudflare.com/workers/ci-cd/external-cicd/github-actions/
-name: Deploy to production
+name: Release to production
 
 on:
-  workflow_dispatch: # Bypass test workflow status (emergency only)
-  workflow_run:
-    workflows: [Test]
-    branches:
-      - init
+  # Manual deployment (useful when release tests fail)
+  workflow_dispatch:
+
+  # Deploy on published releases
+  release:
     types:
-      - completed
+      - published
 
 jobs:
+  test:
+    name: Run tests
+    uses: $/.github/workflows/test.yml
+    secrets: inherit
+
   deploy-app:
     name: Deploy SvelteKit application
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     timeout-minutes: 15
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    needs: test
     defaults:
       run:
         working-directory: ./app
@@ -50,9 +55,9 @@ jobs:
 
   deploy-email-notifications:
     name: Deploy Email Notification service
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     timeout-minutes: 15
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    needs: test
     defaults:
       run:
         working-directory: ./email-notifications
