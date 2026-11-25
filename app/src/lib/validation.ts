@@ -48,6 +48,11 @@ export const loginSchema = object({
 		.required("Password is required"),
 });
 
+export const userProfileSchema = object({
+	id: string().trim().required().uuid(),
+	displayName: string().trim().default(""),
+});
+
 export const eventRegistrationSchema = object({
 	eventID: eventID,
 	name: participantName,
