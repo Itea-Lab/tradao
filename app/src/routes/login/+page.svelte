@@ -15,7 +15,7 @@
 	}
 
 	onMount(() => {
-		if (data.claims) onLoggedIn();
+		if (data?.claims) onLoggedIn();
 	});
 </script>
 
