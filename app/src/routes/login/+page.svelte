@@ -2,9 +2,21 @@
 	import Banner from "#components/Banner.svelte";
 	import LoginForm from "#components/LoginForm.svelte";
 	import PageMetadata from "#components/PageMetadata.svelte";
+	import type { PageData } from "./$types";
+	import { goto } from "$app/navigation";
 	import { page } from "$app/state";
+	import { onMount } from "svelte";
 
-	const redirectTo = $state(page.url.toString());
+	let { data }: { data: PageData } = $props();
+	const redirectTo = $state(page.url.searchParams.get("redirectTo"));
+
+	function onLoggedIn() {
+		goto(redirectTo || "/organisers", { replace: true });
+	}
+
+	onMount(() => {
+		if (data.claims) onLoggedIn();
+	});
 </script>
 
 <PageMetadata
@@ -19,7 +31,7 @@
 		description="Access the management dashboard to manage events and tickets"
 	/>
 
-	<LoginForm {redirectTo} />
+	<LoginForm onSuccess={onLoggedIn} />
 </div>
 
 <style>

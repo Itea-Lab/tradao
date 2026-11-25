@@ -1,9 +1,8 @@
 <script lang="ts">
 	import { login } from "#lib/remotes/auth.remote.js";
 	import { issuesText, showSnackbar } from "#lib/utils.js";
-	import { goto } from "$app/navigation";
-	let { redirectTo }: { redirectTo?: string } = $props();
 
+	let { onSuccess }: { onSuccess: () => void } = $props();
 	let showPassword = $state(false);
 
 	const { email, _password } = login.fields;
@@ -21,7 +20,7 @@
 					if (!form.result?.success) throw new Error(form.result?.message);
 					form.element.reset();
 					showSnackbar(form.result.message);
-					goto(redirectTo || "/organisers");
+					onSuccess();
 				}
 			} catch (e) {
 				console.error(e);
@@ -53,9 +52,7 @@
 		<div class="space"></div>
 
 		<div class="grid">
-			<button type="submit" class="s9" disabled={!!login.pending}>
-				Login
-			</button>
+			<button type="submit" class="s9" disabled={!!login.pending}> Login </button>
 
 			<button
 				type="button"
@@ -65,7 +62,9 @@
 				onclick={togglePasswordVisibility}
 			>
 				<i>{showPassword ? "visibility_off" : "visibility"}</i>
-				<span class="tooltip bottom">{showPassword ? "Hide password" : "Show password"}</span>
+				<span class="tooltip bottom"
+					>{showPassword ? "Hide password" : "Show password"}</span
+				>
 			</button>
 		</div>
 	</form>

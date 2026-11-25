@@ -2,9 +2,20 @@ import { error, redirect } from "@sveltejs/kit";
 import type { LayoutServerLoad } from "./$types";
 
 export const load: LayoutServerLoad = async ({ locals: { supabase }, url }) => {
-	const { data: claimsData, error: claimsError } = await supabase.auth.getClaims();
-	if (claimsError) error(claimsError.status || 500, claimsError.message);
-	if (claimsData?.claims) return { claims: claimsData.claims };
+	const { data, error: userError } = await supabase.auth.getUser();
 
-	redirect(303, `/login?redirectTo=${encodeURIComponent(url.pathname + url.search)}`);
+	if (userError?.name === "AuthSessionMissingError") {
+		console.warn("Redirecting to login");
+		redirect(
+			303,
+			`/login?redirectTo=${encodeURIComponent(url.pathname + url.search)}`,
+		);
+	}
+
+	if (userError) {
+		console.error("Login error");
+		error(userError.status || 500, userError.name);
+	}
+
+	return data;
 };
