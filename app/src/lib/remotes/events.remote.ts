@@ -36,6 +36,19 @@ export const getEvents = query(async () => {
  * This function validates the input data
  */
 export const createEvent = form(eventCreationSchema, async (form, issue) => {
+	const organiser_id = await inferOrganiserID();
+	if (!organiser_id)
+		error(
+			403,
+			"You need association to an organiser to create new events." +
+				"Contact Tradao admin(s) to be appointed.",
+		);
+
+	// Validate end_time is after start_time
+	if (new Date(form.end_time) <= new Date(form.start_time)) {
+		invalid(issue.end_time("End time must be after start time"));
+	}
+
 	const sb = getRequestEvent().locals.supabase;
 
 	const {
@@ -44,13 +57,6 @@ export const createEvent = form(eventCreationSchema, async (form, issue) => {
 	} = await sb.auth.getUser();
 	if (!user || userError)
 		return { success: false, message: "You must log in to create an event." };
-
-	// Validate end_time is after start_time
-	if (new Date(form.end_time) <= new Date(form.start_time)) {
-		invalid(issue.end_time("End time must be after start time"));
-	}
-
-	const organiser_id = await inferOrganiserID();
 
 	// Upload event data
 	const { data: event, error: eventError } = await sb
