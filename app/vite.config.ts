@@ -16,6 +16,12 @@ export default defineConfig({
 			compilerOptions: { experimental: { async: true } },
 		}),
 	],
+	ssr: {
+		external: ["@sveltejs/kit"],
+		optimizeDeps: {
+			exclude: ["@sveltejs/kit"],
+		},
+	},
 	test: {
 		browser: {
 			enabled: true,
